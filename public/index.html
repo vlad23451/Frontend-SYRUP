@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Syrup Chat</title>
+  </head>
+  <body>
+    <script>
+      (function applyAppearanceFromLocalStorage() {
+        try {
+          var ls = window.localStorage;
+          var root = document.documentElement;
+
+          // Dock edge position (for CSS orientation and initial placement helpers if needed)
+          var dockEdge = ls.getItem('dock-edge') || 'bottom';
+          document.documentElement.dataset.dockEdge = dockEdge;
+
+          // Theme
+          var theme = ls.getItem('theme') || 'light';
+          root.setAttribute('data-theme', theme);
+
+          // Accent color scheme with saturation
+          var colorScheme = ls.getItem('color-scheme') || 'blue';
+          var saturation = Math.max(20, Math.min(130, Number(ls.getItem('color-saturation') || 100))) / 100;
+          var baseMap = {
+            blue: [59,130,246],
+            blueDark: [30,64,175],
+            yellow: [234,179,8],
+            purple: [139,92,246],
+            purpleDark: [91,33,182],
+            red: [239,68,68],
+            orange: [249,115,22]
+          };
+          var base = baseMap[colorScheme] || baseMap.blue;
+          var rgb = base.map(function(c){ return Math.round(c * saturation); });
+          root.style.setProperty('--color-primary', 'rgb(' + rgb[0] + ', ' + rgb[1] + ', ' + rgb[2] + ')');
+          root.style.setProperty('--color-btn-bg', 'rgb(' + rgb[0] + ', ' + rgb[1] + ', ' + rgb[2] + ')');
+          root.style.setProperty('--color-btn-bg-hover', 'rgba(' + rgb[0] + ', ' + rgb[1] + ', ' + rgb[2] + ', 0.9)');
+
+          // Custom theme overrides
+          var rawCustom = ls.getItem('custom-theme');
+          if (rawCustom) {
+            try {
+              var custom = JSON.parse(rawCustom);
+              if (custom.bg) root.style.setProperty('--color-bg', custom.bg);
+              if (custom.text) root.style.setProperty('--color-text', custom.text);
+              if (custom.primary) root.style.setProperty('--color-primary', custom.primary);
+              if (custom.button) root.style.setProperty('--color-btn-bg', custom.button);
+              if (custom.panel) root.style.setProperty('--panel-bg', custom.panel);
+              if (custom.border) root.style.setProperty('--color-border', custom.border);
+            } catch(e) { /* ignore */ }
+          }
+
+          // UI scale and font size
+          var uiScale = Number(ls.getItem('ui-scale') || 100);
+          root.style.setProperty('--ui-zoom', uiScale + '%');
+          var fontSizePref = ls.getItem('font-size') || 'standard';
+          var baseFont = fontSizePref === 'small' ? '14px' : (fontSizePref === 'large' ? '18px' : '16px');
+          root.style.setProperty('--font-size', baseFont);
+          var fontScale = fontSizePref === 'small' ? '0.9' : (fontSizePref === 'large' ? '1.15' : '1');
+          root.style.setProperty('--font-scale', fontScale);
+
+          // Fonts / weight
+          var ff = ls.getItem('pref-font-family');
+          if (ff) root.style.setProperty('--font-family', ff);
+          var fw = ls.getItem('pref-font-weight');
+          if (fw) root.style.setProperty('--font-weight', String(fw));
+
+          // Animations
+          var animationsEnabled = (ls.getItem('pref-animations-enabled') ?? 'true') === 'true';
+          var animationSpeed = Number(ls.getItem('pref-animation-speed') || 200);
+          root.style.setProperty('--transition', (animationsEnabled ? animationSpeed : 0) + 'ms ease');
+
+          // Datasets (styles)
+          var buttonsStyle = ls.getItem('pref-buttons-style');
+          if (buttonsStyle) root.dataset.btnStyle = buttonsStyle;
+          var avatarShape = ls.getItem('pref-avatar-shape');
+          if (avatarShape) root.dataset.avatarShape = avatarShape;
+
+          // Background and blur/transparency
+          var bgMode = ls.getItem('bg-mode') || 'solid';
+          var bgColor = ls.getItem('bg-color') || '#f5f7fb';
+          var bgGradient = ls.getItem('bg-gradient') || 'linear-gradient(135deg, #cfe8ff, #f9f9ff)';
+          var bgImage = ls.getItem('bg-image') || '';
+          var blur = Number(ls.getItem('backdrop-blur') || 4);
+          root.style.setProperty('--backdrop-blur', String(blur));
+          var transparency = Number(ls.getItem('panel-transparency') || 100);
+          var alpha = Math.max(0.2, Math.min(1, transparency / 100));
+          root.style.setProperty('--panel-bg', 'rgba(255,255,255,' + alpha + ')');
+
+          // Set body background right away (body already exists here)
+          if (bgMode === 'solid') {
+            document.body.style.background = bgColor;
+          } else if (bgMode === 'gradient') {
+            document.body.style.background = bgGradient;
+          } else if (bgMode === 'image') {
+            document.body.style.background = bgImage ? 'url(' + bgImage + ') center/cover no-repeat fixed' : '';
+          }
+
+          // Dock visual settings (CSS variables and classes)
+          // Variables
+          var iconPreset = ls.getItem('dock-icon-preset') || 'medium';
+          var presetToSize = { small: 22, medium: 28, large: 34 };
+          var iconBase = presetToSize[iconPreset] || 28;
+          var sizeFactor = Number(ls.getItem('dock-size') || 1);
+          var effectiveIcon = Math.round(iconBase * sizeFactor);
+          root.style.setProperty('--dock-icon-size', effectiveIcon + 'px');
+          var blurVal = Number(ls.getItem('dock-blur') || 16);
+          root.style.setProperty('--dock-blur', String(blurVal) + 'px');
+          var radiusVal = Number(ls.getItem('dock-radius-val') || 20);
+          root.style.setProperty('--dock-radius', String(radiusVal) + 'px');
+          var labelSize = Number(ls.getItem('dock-label-size') || 12);
+          root.style.setProperty('--dock-label-size', String(labelSize) + 'px');
+          var hoverScale = Number(ls.getItem('dock-hover-scale') || 1.15);
+          root.style.setProperty('--dock-hover-scale', String(hoverScale));
+          var animSpeed = Number(ls.getItem('dock-anim-speed') || 200);
+          root.style.setProperty('--transition', String(animSpeed) + 'ms ease');
+          var dockBgType = ls.getItem('dock-bg-type') || 'frosted';
+          var dockBg = ls.getItem('dock-bg') || 'rgba(255,255,255,0.65)';
+          if (dockBgType === 'solid') root.style.setProperty('--dock-bg', dockBg);
+          if (dockBgType === 'transparent') root.style.setProperty('--dock-bg', 'transparent');
+          if (dockBgType === 'frosted') root.style.setProperty('--dock-bg', 'rgba(255,255,255,0.65)');
+
+          // Classes (apply when dock element is available)
+          var applyDockClasses = function(el){
+            var shadowMode = ls.getItem('dock-shadow') || 'default';
+            el.classList.toggle('shadow-none', shadowMode === 'none');
+            el.classList.toggle('shadow-soft', shadowMode === 'soft');
+            el.classList.toggle('shadow-sharp', shadowMode === 'sharp');
+            var onTop = (ls.getItem('dock-on-top') ?? 'false') === 'true';
+            el.classList.toggle('on-top', onTop);
+            var autoHide = (ls.getItem('dock-auto-hide') ?? 'false') === 'true';
+            el.classList.toggle('auto-hide', autoHide);
+            var hideLabels = (ls.getItem('dock-hide-labels') ?? 'false') === 'true';
+            el.classList.toggle('hide-labels', hideLabels);
+            var activeIndicator = ls.getItem('dock-active-indicator') || 'dot';
+            el.classList.toggle('active-indicator-dot', activeIndicator === 'dot');
+            el.classList.toggle('active-indicator-highlight', activeIndicator === 'highlight');
+            el.classList.toggle('active-indicator-none', activeIndicator === 'none');
+            var notifyIndicator = ls.getItem('dock-notify-indicator') || 'number';
+            el.classList.toggle('notify-indicator-number', notifyIndicator === 'number');
+            el.classList.toggle('notify-indicator-dot', notifyIndicator === 'dot');
+            el.classList.toggle('notify-indicator-anim', notifyIndicator === 'anim');
+          };
+          var tryApply = function(){
+            var el = document.querySelector('.dock');
+            if (el) { applyDockClasses(el); return; }
+            if (document.readyState === 'complete') {
+              // one last attempt after load
+              setTimeout(function(){ var el2 = document.querySelector('.dock'); if (el2) applyDockClasses(el2); }, 0);
+              return;
+            }
+            // wait for render
+            requestAnimationFrame(tryApply);
+          };
+          tryApply();
+        } catch (e) {
+          // no-op: fail silently to avoid blocking initial render
+        }
+      })();
+    </script>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

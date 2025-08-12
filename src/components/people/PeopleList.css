@@ -1,0 +1,118 @@
+.people-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.people-list-item {
+  background: linear-gradient(120deg, #23243a 60%, #2d2e4a 100%);
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(44,62,80,0.10);
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+  transition: box-shadow 0.18s, background var(--transition);
+  min-height: 64px;
+}
+
+.people-list-item:hover {
+  box-shadow: 0 6px 24px rgba(44,62,80,0.18);
+}
+
+.people-list-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 20px;
+  background: #23243a;
+  box-shadow: 0 1px 4px rgba(44,62,80,0.10);
+  border: 2px solid var(--color-primary, #2d72d9);
+}
+
+.people-list-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.people-list-login {
+  font-weight: 600;
+  color: var(--color-primary, #2d72d9);
+  font-size: 1.15em;
+  margin-bottom: 2px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.people-list-name {
+  color: var(--color-text, #fff);
+  font-size: 1em;
+  margin-bottom: 2px;
+}
+
+.people-list-item .custom-modal-btn {
+  background: var(--color-primary);
+  color: var(--color-btn-text);
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 0.9em;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 16px;
+  transition: background var(--transition), box-shadow var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.people-list-item .custom-modal-btn:hover {
+  background: var(--color-btn-bg-hover);
+}
+
+.people-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+.people-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.people-tabs button {
+  background: #f5f6fa;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.people-tabs button.active {
+  background: #2d72d9;
+  color: #fff;
+}
+
+.people-search {
+  margin-bottom: 18px;
+}
+
+.people-search input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  font-size: 1em;
+  background: #f9f9f9;
+  transition: border 0.2s;
+}
+
+.people-search input:focus {
+  border: 1.5px solid #2d72d9;
+  outline: none;
+}

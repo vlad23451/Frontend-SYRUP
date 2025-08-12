@@ -1,0 +1,80 @@
+/**
+ * @fileoverview Хук для управления формой авторизации
+ * 
+ * Этот хук предоставляет логику для обработки форм входа и регистрации.
+ * Управляет состоянием формы, валидацией и отправкой данных на сервер.
+ * 
+ * Функциональность:
+ * - Управление состоянием полей формы (логин, пароль)
+ * - Обработка отправки формы
+ * - Интеграция с сервисами авторизации
+ * - Навигация после успешной авторизации
+ * - Обработка ошибок
+ * 
+ * Состояния:
+ * - loginInput: значение поля логин
+ * - password: значение поля пароля
+ * - error: сообщение об ошибке
+ * - loading: состояние загрузки запроса
+ * 
+ * Возвращаемые значения:
+ * - loginInput, setLoginInput: поле логина и его сеттер
+ * - password, setPassword: поле пароля и его сеттер
+ * - error: текущая ошибка
+ * - loading: состояние загрузки
+ * - handleSubmit: функция обработки отправки формы
+ * 
+ * @param {boolean} isRegister - флаг режима формы (true - регистрация, false - вход)
+ * @returns {Object} объект с состоянием формы и функциями управления
+ * @author SYRUP CHAT Team
+ * @version 1.0.0
+ */
+
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { login, register } from '../services/authService'
+import { useStore } from '../stores/StoreContext'
+
+export const useAuthForm = (isRegister) => {
+  const [loginInput, setLoginInput] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
+  const { auth } = useStore()
+
+  const handleSubmit = async (e, extra = {}) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      let response
+      if (isRegister) {
+        response = await register(loginInput, password, extra.about)
+      } else {
+        response = await login(loginInput, password)
+      }
+      if (response?.user) {
+        auth.setUser({ ...response.user })
+        try { localStorage.setItem('user_id', String(response?.user_id)) } catch {}
+      } else {
+        auth.setUser(null)
+        try { localStorage.removeItem('user_id') } catch {}
+      }
+      navigate('/profile')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return {loginInput,
+          setLoginInput,
+          password,
+          setPassword,
+          error,
+          loading,
+          handleSubmit}
+} 

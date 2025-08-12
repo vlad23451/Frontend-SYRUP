@@ -1,0 +1,54 @@
+# Node / React
+node_modules/
+build/
+dist/
+.tmp/
+.cache/
+.eslintcache
+.npm/
+.vscode/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Coverage / Tests / Tools
+coverage/
+.jest/
+.cypress/
+.storybook-out/
+storybook-static/
+
+# Misc
+*.local
+*.pid
+*.seed
+*.tgz
+
+# Production artifacts
+*.zip
+
+# TypeScript (на случай добавления)
+*.tsbuildinfo
+
+# Lockfiles (оставьте нужный менеджер)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml

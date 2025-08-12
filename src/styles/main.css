@@ -1,0 +1,316 @@
+.main-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  transition: background var(--transition);
+  padding-bottom: 88px; /* space for dock */
+}
+
+.page-container {
+  flex: 1;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: calc(28px * var(--font-scale, 1)) 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.page-title {
+  color: var(--color-text);
+  font-size: calc(2.3em * var(--font-scale, 1));
+  font-weight: 800;
+  margin: 0 0 28px 0;
+  text-align: center;
+}
+
+.section-title {
+  color: var(--color-text);
+  font-size: calc(1.6em * var(--font-scale, 1));
+  font-weight: 700;
+  margin: 0 0 20px 0;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: var(--color-text-secondary);
+  font-size: 1.1em;
+}
+
+.error {
+  color: #dc3545;
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  margin: 16px 0;
+  font-size: 1em;
+}
+
+.success {
+  color: #28a745;
+  background: rgba(40, 167, 69, 0.1);
+  border: 1px solid rgba(40, 167, 69, 0.2);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  margin: 16px 0;
+  font-size: 1em;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-text-secondary);
+}
+
+.empty-state h3 {
+  margin: 0 0 16px 0;
+  font-size: 1.5em;
+  font-weight: 600;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 1.1em;
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 24px 16px;
+  }
+  
+  .page-title {
+    font-size: 2em;
+  }
+  
+  .section-title {
+    font-size: 1.5em;
+  }
+}
+
+/* Dock */
+.dock {
+  position: fixed;
+  left: 50%;
+  top: 18px; /* default: top */
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 6000; /* above modal backdrop, visible with modal */
+}
+
+.dock-inner {
+  pointer-events: auto;
+  display: flex;
+  gap: 14px;
+  background: var(--dock-bg, rgba(255, 255, 255, 0.65));
+  -webkit-backdrop-filter: saturate(180%) blur(var(--dock-blur, 16px));
+  backdrop-filter: saturate(180%) blur(var(--dock-blur, 16px));
+  border: 1px solid var(--color-border);
+  border-radius: var(--dock-radius, 20px);
+  padding: 12px 14px;
+  box-shadow: var(--dock-shadow, var(--shadow-lg));
+  cursor: grab;
+}
+.dock-grabber {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 6px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  cursor: grab;
+}
+
+[data-theme="dark"] .dock-inner {
+  background: rgba(15, 23, 42, 0.65);
+}
+
+.dock-item {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: var(--color-text);
+  transition: transform var(--transition), color var(--transition);
+  /* reset default button styles to match links */
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  min-height: auto;
+  border-radius: 0;
+}
+
+/* Override global button styles for dock buttons */
+[data-theme] button.dock-item {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: var(--color-text);
+}
+
+/* Prevent global button hover styles from affecting dock theme button */
+button.dock-item:hover,
+button.dock-item:active,
+button.dock-item:focus {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.dock-handle {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: 1px dashed var(--color-border);
+  color: var(--color-text-secondary);
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  cursor: grab;
+}
+
+.dock-handle:active {
+  cursor: grabbing;
+}
+
+.dock-icon {
+  width: var(--dock-icon-size, 28px);
+  height: var(--dock-icon-size, 28px);
+  display: inline-flex;
+}
+
+.dock-icon svg {
+  width: var(--dock-icon-size, 28px);
+  height: var(--dock-icon-size, 28px);
+}
+
+/* Make dock action buttons (Назад/Настройки) same visual scale as nav */
+.dock-item[title="Назад"],
+.dock-item[title="Настройки"] {
+  transform: scale(0.92);
+}
+.dock-item[title="Назад"] .dock-icon svg,
+.dock-item[title="Настройки"] .dock-icon svg {
+  width: 24px;
+  height: 24px;
+}
+.dock-item[title="Назад"] .dock-label,
+.dock-item[title="Настройки"] .dock-label {
+  font-size: 11px;
+}
+
+.dock-item:hover .dock-icon svg {
+  transform: scale(var(--dock-hover-scale, 1.15));
+}
+
+.dock-label {
+  font-size: var(--dock-label-size, 12px);
+  color: var(--color-text-secondary);
+}
+
+.dock-item.active .dock-icon svg {
+  color: var(--color-primary);
+  transform: scale(1.15);
+}
+
+.dock-item.active .dock-label::after {
+  content: '';
+  display: block;
+  width: 6px;
+  height: 6px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  margin: 4px auto 0 auto;
+}
+
+.dock-separator {
+  width: 1px;
+  align-self: stretch;
+  background: var(--color-border);
+  opacity: 0.85;
+}
+
+/* Active/notification indicators */
+.active-indicator-dot .dock-item.active .dock-icon::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background: var(--color-primary);
+  border-radius: 50%;
+}
+.active-indicator-highlight .dock-item.active .dock-icon {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent);
+  border-radius: 8px;
+}
+.notify-indicator-number .dock-item .dock-icon[data-badge]::after {
+  content: attr(data-badge);
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ef4444;
+  color: #fff;
+  border-radius: 999px;
+  min-width: 16px;
+  height: 16px;
+  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+.notify-indicator-dot .dock-item .dock-icon[data-badge]::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+}
+.notify-indicator-anim .dock-item .dock-icon[data-badge] {
+  animation: dock-bounce 1s ease infinite;
+}
+@keyframes dock-bounce {
+  0%, 100% { transform: translateY(0) }
+  40% { transform: translateY(-4px) }
+}
+
+/* Orientation and behavior modifiers */
+.dock.vertical .dock-inner { flex-direction: column; }
+.dock.hide-labels .dock-label { display: none; }
+.dock.auto-hide { opacity: 0.08; transition: opacity var(--transition); }
+.dock.auto-hide:hover, .dock.auto-hide:focus-within { opacity: 1; }
+.dock.on-top { z-index: 7000; }
+
+/* Shadow styles via variable fallback */
+.dock.shadow-none .dock-inner { box-shadow: none; }
+.dock.shadow-soft .dock-inner { box-shadow: var(--shadow-sm); }
+.dock.shadow-sharp .dock-inner { box-shadow: 0 12px 28px rgba(0,0,0,0.25); }
+
+.dock-search-input {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 6px 8px;
+  width: 120px;
+}
