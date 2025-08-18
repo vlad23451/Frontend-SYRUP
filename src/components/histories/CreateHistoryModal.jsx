@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
-import { useDraggableModal } from '../../hooks/ui/useDraggableModal'
-import { useCreateHistoryForm } from '../../hooks/histories/useCreateHistoryForm'
+import { useDraggableModal } from '../../hooks/useDraggableModal'
+import { useCreateHistoryForm } from '../../hooks/useCreateHistoryForm'
 import ModalHeader from '../ui/ModalHeader'
 import ModalFooter from '../ui/ModalFooter'
 import CreateHistoryForm from './CreateHistoryForm'

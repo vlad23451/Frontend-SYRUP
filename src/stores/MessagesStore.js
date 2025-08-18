@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx'
-import { getChatMessages } from '../services/chatService'
+import { getChatMessages, getMessageHistory } from '../services/chatService'
 
 /**
  * MessagesStore
@@ -87,6 +87,23 @@ class MessagesStore {
     
     try {
       const data = await getChatMessages(companionLogin)
+      runInAction(() => {
+        this.items = data
+        this.loading = false
+      })
+    } catch (error) {
+      runInAction(() => {
+        this.error = error.message
+        this.loading = false
+      })
+    }
+  }
+
+  async fetchHistoryByCompanionId(companionId, skip = 0, limit = 50) {
+    this.setLoading(true)
+    this.setError(null)
+    try {
+      const data = await getMessageHistory(companionId, skip, limit)
       runInAction(() => {
         this.items = data
         this.loading = false

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import ModalHeader from '../ui/ModalHeader'
-import { useDraggableModal } from '../../hooks/ui/useDraggableModal'
+import { useDraggableModal } from '../../hooks/useDraggableModal'
+import Avatar from '../ui/Avatar'
 
 const UsersListModal = ({ open, title, users, loading, error, onClose, onUserClick, onActionRender }) => {
   const containerRef = useRef(null)
@@ -38,10 +39,13 @@ const UsersListModal = ({ open, title, users, loading, error, onClose, onUserCli
               ) : (
                 users.map(user => (
                   <div key={user.id} className="people-list-item" style={{ cursor: 'pointer' }} onClick={() => onUserClick && onUserClick(user)}>
-                    <img
-                      className="people-list-avatar"
-                      src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.login)}&background=random`}
+                    <Avatar
+                      avatarKey={user.avatar_key || user.user_info?.avatar_key}
+                      userId={user.id || user.user_info?.id}
+                      isMyAvatar={false}
+                      size={56}
                       alt={user.login}
+                      className="people-list-avatar"
                     />
                     <div className="people-list-info">
                       <span className="people-list-login">{user.login}</span>

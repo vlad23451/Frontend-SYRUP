@@ -1,10 +1,22 @@
 /* Messenger/Chat Page Styles */
 
 /* Main Layout */
+.messenger-page {
+  position: fixed;
+  inset: 0;
+  padding-top: 64px; /* keep space for dock */
+  padding-bottom: 24px;
+  background: var(--color-bg);
+}
+
 .messenger-container {
+  position: absolute;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  height: calc(100vh - 120px);
-  max-width: 1400px;
+  height: calc(100vh - 64px - 24px);
+  width: min(1600px, 96vw);
   margin: 0 auto;
   background: var(--color-bg);
   border-radius: var(--border-radius);
@@ -658,10 +670,7 @@
 }
 
 @media (max-width: 768px) {
-  .messenger-container {
-    flex-direction: column;
-    height: calc(100vh - 80px);
-  }
+  .messenger-container { flex-direction: column; width: 100vw; height: calc(100vh - 64px); left: 0; transform: none; border-radius: 0; box-shadow: none; }
   
   .messenger-sidebar {
     width: 100%;

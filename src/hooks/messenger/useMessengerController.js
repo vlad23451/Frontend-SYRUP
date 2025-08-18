@@ -9,16 +9,30 @@ export const useMessengerController = (selectedChat) => {
   const [selectedIndices, setSelectedIndices] = useState([])
 
   useEffect(() => {
-    if (!selectedChat) {
-      messages.clearMessages?.()
-      return
+    let cancelled = false
+    const run = async () => {
+      // Очистить при отсутствии выбранного чата
+      if (!selectedChat) {
+        messages.clearMessages?.()
+        return
+      }
+      // Загрузка истории при выборе чата
+      try {
+        const companionId = selectedChat.companion_id || selectedChat.companionId || selectedChat.id
+        if (companionId) {
+          await messages.fetchHistoryByCompanionId?.(companionId, 0, 50)
+        } else if (selectedChat.companion_login) {
+          await messages.fetchMessages?.(selectedChat.companion_login)
+        } else {
+          messages.clearMessages?.()
+        }
+      } catch (e) {
+        // no-op
+      }
+      if (cancelled) return
     }
-    messages.setItems?.([
-      { user: selectedChat.companion_login, text: 'Привет! Как дела?', time: new Date(Date.now() - 1000*60*5).toISOString() },
-      { user: 'Вы', text: 'Привет! Всё отлично. Тестовый диалог.', time: new Date(Date.now() - 1000*60*4).toISOString() },
-      { user: selectedChat.companion_login, text: 'Здорово! Проверяю модалку 😉', time: new Date(Date.now() - 1000*60*3).toISOString() },
-      { user: 'Вы', text: 'Да, выглядит супер!', time: new Date(Date.now() - 1000*60*2).toISOString() },
-    ])
+    run()
+    return () => { cancelled = true }
   }, [selectedChat, messages])
 
   const handleSend = useCallback((text, file) => {

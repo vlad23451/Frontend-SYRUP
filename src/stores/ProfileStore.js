@@ -33,8 +33,14 @@ class ProfileStore {
     
     try {
       const data = await getCurrentUser()
+      
+      const normalizedData = {
+        ...data,
+        avatar_key: data?.avatar_key || data?.user_info?.avatar_key
+      }
+
       runInAction(() => {
-        this.user = data
+        this.user = normalizedData
         this.loading = false
       })
     } catch (error) {

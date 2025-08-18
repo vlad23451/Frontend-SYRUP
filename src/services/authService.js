@@ -41,6 +41,7 @@ export const register = async (login, password, about) => {
     method: "POST",
     body: JSON.stringify({ login, password, about })
   })
+  
   if (!response.user || !response.token) {
     return {
       user: { login, about },

@@ -3,7 +3,7 @@ const HistoryContent = ({ history }) => {
     <>
       <div className="history-card-divider" />
       <div className="history-image-placeholder tall">
-        <img src="https://placehold.co/600x220?text=Image" alt="Заглушка" className="history-image tall" />
+        <img src="https://placehold.co/600x220?text=Image" alt="Изображение" className="history-image tall" />
       </div>
       {history.description && (
         <div className="history-description-row">

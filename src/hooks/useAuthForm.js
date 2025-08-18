@@ -31,7 +31,7 @@
  */
 
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { login, register } from '../services/authService'
 import { useStore } from '../stores/StoreContext'
 
@@ -41,7 +41,8 @@ export const useAuthForm = (isRegister) => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-  const { auth } = useStore()
+  const location = useLocation()
+  const { auth, profile } = useStore()
 
   const handleSubmit = async (e, extra = {}) => {
     e.preventDefault()
@@ -52,17 +53,29 @@ export const useAuthForm = (isRegister) => {
       let response
       if (isRegister) {
         response = await register(loginInput, password, extra.about)
+        
+        if (response?.user) {
+          auth.setUser({ ...response.user })
+          try { localStorage.setItem('user_id', String(response?.user_id)) } catch {}
+        } else {
+          auth.setUser(null)
+          try { localStorage.removeItem('user_id') } catch {}
+        }
       } else {
         response = await login(loginInput, password)
+        
+        if (response?.user) {
+          auth.setUser({ ...response.user })
+          try { localStorage.setItem('user_id', String(response?.user_id)) } catch {}
+        } else {
+          auth.setUser(null)
+          try { localStorage.removeItem('user_id') } catch {}
+        }
       }
-      if (response?.user) {
-        auth.setUser({ ...response.user })
-        try { localStorage.setItem('user_id', String(response?.user_id)) } catch {}
-      } else {
-        auth.setUser(null)
-        try { localStorage.removeItem('user_id') } catch {}
-      }
-      navigate('/profile')
+      
+      // Перенаправляем на исходную страницу или на главную
+      const from = location.state?.from?.pathname || '/'
+      navigate(from, { replace: true })
     } catch (err) {
       setError(err.message)
     } finally {
@@ -77,4 +90,4 @@ export const useAuthForm = (isRegister) => {
           error,
           loading,
           handleSubmit}
-} 
+}

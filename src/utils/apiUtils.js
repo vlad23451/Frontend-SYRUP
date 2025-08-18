@@ -23,25 +23,30 @@
  * 
  * @author SYRUP CHAT Team
  * @version 1.0.0
+ * const BASE_URL = 'http://localhost:8000'
  */
 
 import authStore from "../stores/AuthStore"
 
-const BASE_URL = 'http://localhost:8000'
+const BASE_URL = 'https://myprojectfastapi.loca.lt'
 
 export const apiRequest = async (endpoint, options = {}) => {
   const isGet = !options.method || options.method === "GET"
+  const isFormData = options.body instanceof FormData
+  
   const fetchOptions = isGet
     ? { credentials: "include", ...options }
     : {
-        headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+        headers: isFormData 
+          ? { ...(options.headers || {}) } // Для FormData не добавляем Content-Type
+          : { "Content-Type": "application/json", ...(options.headers || {}) },
         credentials: "include",
         ...options,
       }
 
   let response = await fetch(`${BASE_URL}${endpoint}`, fetchOptions)
 
-  if (response.status === 400) {
+  if ((response.status === 400 || response.status === 401 || response.status === 403) && !endpoint.startsWith('/auth/refresh')) {
     const refreshed = await authStore.tryRefreshToken()
     if (refreshed) {
       response = await fetch(`${BASE_URL}${endpoint}`, fetchOptions)

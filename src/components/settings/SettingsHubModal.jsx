@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import ModalHeader from '../ui/ModalHeader'
 import { useSettings } from '../../contexts/SettingsContext'
-import { useDraggableModal } from '../../hooks/ui/useDraggableModal'
+import { useDraggableModal } from '../../hooks/useDraggableModal'
 
 const SettingsHubModal = ({ open, onClose }) => {
   const containerRef = useRef(null)

@@ -9,7 +9,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { observer } from 'mobx-react-lite'
-import { useDockController } from '../../hooks/dock/useDockController'
+import { useDockController } from '../../hooks/useDockController'
 import { useSettings } from '../../contexts/SettingsContext'
 
 const Dock = observer(() => {

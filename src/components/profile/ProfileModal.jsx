@@ -3,6 +3,7 @@ import ModalHeader from '../ui/ModalHeader'
 import { useDraggableModal } from '../../hooks/useDraggableModal'
 import UserProfileInfo from './UserProfileInfo'
 import SubscribeButton from './SubscribeButton'
+import Avatar from '../ui/Avatar'
 
 const ProfileModal = ({ open, user, loading, error, onClose, onGoToChat, onGoToProfile }) => {
   const containerRef = useRef(null)
@@ -42,10 +43,17 @@ const ProfileModal = ({ open, user, loading, error, onClose, onGoToChat, onGoToP
         {user && (
           <>
             <div className="profile-modal-header" style={{justifyContent: 'center'}}>
-              <img
-                src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.login)}&background=random`}
+              <Avatar
+                avatarKey={user.user_info?.avatar_key || user.avatar_key}
+                userId={user.user_info?.id || user.id}
+                isMyAvatar={false}
+                size={160}
                 alt={user.login}
                 className="profile-modal-avatar"
+                style={{
+                  border: '4px solid var(--color-border)',
+                  backgroundColor: '#f0f0f0'
+                }}
               />
             </div>
             <div className="profile-modal-title" style={{textAlign: 'center'}}>

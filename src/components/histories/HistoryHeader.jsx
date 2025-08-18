@@ -1,9 +1,10 @@
-import { useProfile } from '../../hooks/profile/useProfile'
+import { useNavigate } from 'react-router-dom'
+import { useProfile } from '../../hooks/useProfile'
 import ProfileModal from '../profile/ProfileModal'
 
 const HistoryHeader = ({ history, forceMeAsAuthor = false, overrideAuthor }) => {
   const { profileModal, getAuthorInfo, handleProfileClick, handleCloseProfileModal } = useProfile()
-  
+  const navigate = useNavigate()
   const { displayLogin, displayAvatar, targetUserId } = getAuthorInfo(history, {
     forceMeAsAuthor,
     overrideAuthorId: overrideAuthor?.id,
@@ -43,7 +44,7 @@ const HistoryHeader = ({ history, forceMeAsAuthor = false, overrideAuthor }) => 
         loading={profileModal.loading}
         error={profileModal.error}
         onClose={handleCloseProfileModal}
-        onGoToChat={() => { window.location.href = '/messenger' }}
+        onGoToChat={() => { navigate(`/messenger/${targetUserId}`) }}
         onGoToProfile={() => {
           const uid = profileModal?.user?.id || profileModal?.user?.user_info?.id
           if (uid) window.location.href = `/profile/${uid}`

@@ -2,7 +2,7 @@ import React from 'react'
 
 const AvatarUpload = ({ avatarPreview, onFileChange, loading }) => (
   <div className="avatar-upload">
-    <label htmlFor="avatar-upload-input" className="avatar-upload-label">Аватарка (заглушка)</label>
+    <label htmlFor="avatar-upload-input" className="avatar-upload-label">Аватарка</label>
     <div className="avatar-upload-preview">
       <label htmlFor="avatar-upload-input" className="avatar-upload-circle">
         {avatarPreview ? (
@@ -20,7 +20,7 @@ const AvatarUpload = ({ avatarPreview, onFileChange, loading }) => (
         />
       </label>
     </div>
-    <span className="avatar-upload-hint">Выберите файл (заглушка)</span>
+    <span className="avatar-upload-hint">Выберите файл</span>
   </div>
 )
 

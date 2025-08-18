@@ -57,7 +57,7 @@ const ProfileHeader = observer(() => {
   return (
     <div className="profile-header">
       <div style={{display:'flex', flexDirection:'column', alignItems:'center', width:'100%'}}>
-        <ProfileAvatar user={profile.user} isMe={false} onAvatarUpdated={handleAvatarUpdated} />
+        <ProfileAvatar user={profile.user} isMe={true} onAvatarUpdated={handleAvatarUpdated} />
       </div>
       <MyProfileInfo />
     </div>

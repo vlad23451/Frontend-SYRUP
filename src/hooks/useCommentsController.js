@@ -94,7 +94,7 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
           id: auth?.user?.id || auth?.user?.user_info?.id,
           login: auth?.user?.login || auth?.user?.user_info?.login || 'Вы',
           about: auth?.user?.about || auth?.user?.user_info?.about || '',
-          avatar_url: auth?.user?.avatar || auth?.user?.user_info?.avatar || auth?.user?.avatar_url || null,
+          avatar_key: auth?.user?.avatar || auth?.user?.user_info?.avatar || auth?.user?.avatar_key || null,
           follow_status: 'not_following',
         },
         comment_type: 'text',

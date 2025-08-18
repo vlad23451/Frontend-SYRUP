@@ -3,8 +3,9 @@ import { observer } from 'mobx-react-lite'
 import MessageList from './MessageList'
 import MessageInput from './MessageInput'
 import { useMessengerController } from '../../hooks/messenger/useMessengerController'
-import { useDraggableModal } from '../../hooks/ui/useDraggableModal'
+import { useDraggableModal } from '../../hooks/useDraggableModal'
 import ModalHeader from '../ui/ModalHeader'
+import Avatar from '../ui/Avatar'
 
 const MessengerLayout = observer(({ selectedChat }) => {
   const ctrl = useMessengerController(selectedChat)
@@ -20,7 +21,7 @@ const MessengerLayout = observer(({ selectedChat }) => {
   const muteHandleRef = useRef(null)
   useDraggableModal(muteOpen, muteContainerRef, muteHandleRef)
 
-  if (!selectedChat) return null
+  const isNewDialog = !selectedChat
 
   const defaultAvatar = (
     <svg width="56" height="56" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -31,26 +32,22 @@ const MessengerLayout = observer(({ selectedChat }) => {
 
   return (
     <div className="messenger-main">
-      {/* Верхняя панель с аватаркой, именем и статусом (вместо заголовка модалки) */}
       <div className="chat-header" style={{ display: 'flex', alignItems: 'center' }}>
-        {selectedChat.companion_avatar_url
-          ? <img
-              src={selectedChat.companion_avatar_url}
-              alt="Аватар"
-              className="chat-user-avatar"
-              width={56}
-              height={56}
-            />
-          : defaultAvatar
-        }
+        <Avatar
+          avatarKey={selectedChat?.companion_avatar_key}
+          userId={selectedChat?.companion_id}
+          isMyAvatar={false}
+          size={56}
+          alt="Аватар"
+          className="chat-user-avatar"
+        />
         <div className="chat-user-info" style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
           <div className="chat-user-name-row" style={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
-            <div className="chat-user-name" style={{ marginRight: 16 }}>{selectedChat.companion_login}</div>
-            <div className="chat-user-status online">в сети</div>
+            <div className="chat-user-name" style={{ marginRight: 16 }}>{selectedChat?.companion_login || 'Новый диалог'}</div>
+            <div className="chat-user-status online">{isNewDialog ? '-' : 'в сети'}</div>
           </div>
         </div>
         <div className="chat-header-actions" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-          {/* Иконка телефон */}
           <div className="chat-header-action-wrapper" onMouseEnter={() => ctrl.setShowCallMenu(true)} onMouseLeave={() => ctrl.setShowCallMenu(false)}>
             <button type="button" className="chat-header-action-btn" tabIndex={-1} title="Позвонить">
               <span className="chat-menu-ico" aria-hidden>
@@ -64,13 +61,11 @@ const MessengerLayout = observer(({ selectedChat }) => {
               </div>
             )}
           </div>
-          {/* Иконка лупы */}
           <button type="button" className="chat-header-action-btn" tabIndex={-1} title="Поиск по чату">
             <span className="chat-menu-ico" aria-hidden>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </span>
           </button>
-          {/* Иконка три точки */}
           <div className="chat-header-action-wrapper" style={{ position: 'relative' }} onMouseEnter={() => ctrl.setShowMoreMenu(true)} onMouseLeave={() => ctrl.setShowMoreMenu(false)}>
             <button type="button" className="chat-header-action-btn" tabIndex={-1} title="Ещё">
               <span className="chat-menu-ico" aria-hidden>
@@ -93,7 +88,14 @@ const MessengerLayout = observer(({ selectedChat }) => {
         </div>
       </div>
       <div className="messages-container">
-        {ctrl.selectedIndices.length > 0 && (
+        {isNewDialog && ctrl.messages.items.length === 0 ? (
+          <div className="messages-list-empty">
+            <h3>Новый диалог</h3>
+            <p>Напишите первое сообщение, чтобы начать переписку</p>
+          </div>
+        ) : (
+          <>
+            {ctrl.selectedIndices.length > 0 && (
           <div className="bulk-actions">
             <span className="bulk-count">Выбрано: {ctrl.selectedIndices.length}</span>
             <button className="bulk-btn" onClick={ctrl.bulkForward} title="Переслать">Переслать</button>
@@ -101,16 +103,18 @@ const MessengerLayout = observer(({ selectedChat }) => {
             <button className="bulk-btn danger" onClick={ctrl.bulkDelete} title="Удалить">Удалить</button>
             <button className="bulk-btn" onClick={ctrl.clearSelection} title="Снять выделение">Снять</button>
           </div>
+            )}
+            <MessageList 
+              messages={ctrl.messages.items || []} 
+              username={selectedChat?.companion_login || 'Новый диалог'}
+              onDeleteAt={ctrl.handleDeleteAt}
+              onReply={ctrl.handleReply}
+              onSelectToggle={ctrl.toggleSelect}
+              selectedIndices={ctrl.selectedIndices}
+              onPin={ctrl.openPinModal}
+            />
+          </>
         )}
-        <MessageList 
-          messages={ctrl.messages.items || []} 
-          username={selectedChat.companion_login}
-          onDeleteAt={ctrl.handleDeleteAt}
-          onReply={ctrl.handleReply}
-          onSelectToggle={ctrl.toggleSelect}
-          selectedIndices={ctrl.selectedIndices}
-          onPin={ctrl.openPinModal}
-        />
       </div>
       {ctrl.forwardModalOpen && (
         <div className="custom-modal-backdrop" onClick={() => ctrl.setForwardModalOpen(false)}>
@@ -120,7 +124,7 @@ const MessengerLayout = observer(({ selectedChat }) => {
               <div ref={attHandleRef} className="modal-drag-handle" aria-hidden />
               <div className="modal-drag-visible" aria-hidden />
               <div className="custom-modal-content">
-                <p style={{ marginTop: 0, color: 'var(--color-text-secondary)' }}>Заглушка: выберите чат для пересылки.</p>
+                <p style={{ marginTop: 0, color: 'var(--color-text-secondary)' }}>Выберите чат для пересылки.</p>
                 <div style={{ display:'flex', flexDirection:'column', gap: 8 }}>
                   <button className="custom-modal-btn" onClick={() => ctrl.setForwardModalOpen(false)}>Чат A</button>
                   <button className="custom-modal-btn" onClick={() => ctrl.setForwardModalOpen(false)}>Чат B</button>
@@ -129,7 +133,7 @@ const MessengerLayout = observer(({ selectedChat }) => {
               </div>
               <div className="custom-modal-actions center no-divider">
                 <button className="custom-modal-btn" onClick={() => ctrl.setForwardModalOpen(false)}>Закрыть</button>
-              </div>
+              </div>  
             </div>
           </div>
         </div>

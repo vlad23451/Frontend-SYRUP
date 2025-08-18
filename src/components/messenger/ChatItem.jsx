@@ -1,4 +1,5 @@
 import { formatHistoryDateTime } from '../../utils/dateUtils'
+import Avatar from '../ui/Avatar'
 import React from 'react'
 
 const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -16,16 +17,14 @@ const ChatItem = ({ chat, isActive, onSelect = () => {} }) => (
     key={chat.companion_login}
     onClick={() => onSelect(chat)}
   >
-    {chat.companion_avatar_url
-      ? <img
-          src={chat.companion_avatar_url}
-          alt="Аватар"
-          className="chat-avatar"
-          width={56}
-          height={56}
-        />
-      : defaultAvatar
-    }
+    <Avatar
+      avatarKey={chat.companion_avatar_key}
+      userId={chat.companion_id}
+      isMyAvatar={false}
+      size={56}
+      alt="Аватар"
+      className="chat-avatar"
+    />
     <div className="chat-info">
       <div className="chat-login">{chat.companion_login}</div>
       <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>

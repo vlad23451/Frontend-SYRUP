@@ -6,10 +6,10 @@
  * `onDelete`, `onUpdate` для синхронного обновления списков/MobX.
  */
 import { useState } from 'react'
-import { useHistoryComments } from '../../hooks/histories/useHistoryComments'
-import { useHistoryActions } from '../../hooks/histories/useHistoryActions'
-import { useHistoryDates } from '../../hooks/histories/useHistoryDates'
-import { useCommentsModal } from '../../hooks/comments/useCommentsModal'
+import { useHistoryComments } from '../../hooks/useHistoryComments'
+import { useHistoryActions } from '../../hooks/useHistoryActions'
+import { useHistoryDates } from '../../hooks/useHistoryDates'
+import { useCommentsModal } from '../../hooks/useCommentsModal'
 import HistoryHeader from './HistoryHeader'
 import HistoryActions from './HistoryActions'
 import HistoryContent from './HistoryContent'

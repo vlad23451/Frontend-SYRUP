@@ -1,4 +1,4 @@
-import { useHistoryReactions } from '../../hooks/histories/useHistoryReactions'
+import { useHistoryReactions } from '../../hooks/useHistoryReactions'
 
 const HistoryActions = ({ 
   history, 

@@ -1,5 +1,6 @@
 import React from 'react'
 import { formatHistoryDateTime } from '../../utils/dateUtils'
+import Avatar from '../ui/Avatar'
 
 const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
@@ -7,14 +8,17 @@ const HistoryPreview = ({ history }) => {
   if (!history) return null
   const author = history?.author || history?.user || history?.user_info || null
   const authorLogin = author?.login || history?.author_login || history?.login || 'Автор'
-  const authorAvatar = author?.avatar || author?.avatar_url || history?.author_avatar || null
+  const rawAvatarKey = author?.avatar || author?.avatar_key || history?.author_avatar || null
   return (
     <div className="history-preview">
       <div className="history-preview-author">
-        <img
-          className="history-preview-avatar"
-          src={authorAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorLogin)}&background=random`}
+        <Avatar
+          avatarKey={rawAvatarKey}
+          userId={author?.id || history?.author_id}
+          isMyAvatar={false}
+          size={40}
           alt={authorLogin}
+          className="history-preview-avatar"
         />
         <div className="history-preview-meta">
           <div className="history-preview-login">{authorLogin}</div>
@@ -30,7 +34,7 @@ const HistoryPreview = ({ history }) => {
         <div className="history-preview-desc">{history.description}</div>
       )}
       <div className="history-preview-image">
-        <img src="https://placehold.co/600x220?text=Image" alt="Заглушка" />
+        <img src="https://placehold.co/600x220?text=Image" alt="Изображение" />
       </div>
     </div>
   )

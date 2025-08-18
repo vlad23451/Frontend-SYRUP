@@ -72,7 +72,7 @@ const UserProfile = observer(() => {
                       overrideAuthor={{
                         id: user?.user_info?.id || user?.id,
                         login: user?.user_info?.login || user?.login,
-                        avatar: user?.avatar_url || user?.avatar,
+                        avatar: user?.avatar_key || user?.avatar,
                       }}
                     />
                   ))}

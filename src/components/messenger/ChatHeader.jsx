@@ -1,4 +1,5 @@
 import React from 'react'
+import Avatar from '../ui/Avatar'
 
 const ChatHeader = ({ selectedChat }) => {
   if (!selectedChat) {
@@ -18,12 +19,13 @@ const ChatHeader = ({ selectedChat }) => {
   return (
     <div className="chat-header">
       <div className="chat-user-info">
-        <img 
-          src={selectedChat.companion_avatar_url || "/default-avatar.png"} 
-          alt="Аватар" 
+        <Avatar
+          avatarKey={selectedChat.companion_avatar_key}
+          userId={selectedChat.companion_id}
+          isMyAvatar={false}
+          size={40}
+          alt="Аватар"
           className="chat-user-avatar"
-          width={40}
-          height={40}
         />
         <div>
           <div className="chat-user-name">{selectedChat.companion_login}</div>

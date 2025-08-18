@@ -39,7 +39,7 @@ const MessageList = ({ messages, username, onDeleteAt, onReply, onSelectToggle, 
               isOwn={msg.user !== username}
               onReply={(_, m) => { onReply?.(m) }}
               onCopy={() => { try { navigator.clipboard.writeText(msg.text || '') } catch {} }}
-              onEdit={() => { /* заглушка, можно открыть инлайн-редактор */ }}
+              onEdit={() => { /* TODO: открыть инлайн-редактор */ }}
               onDelete={() => { onDeleteAt?.(idx) }}
               onSelect={() => onSelectToggle?.(idx)}
               selected={selectedIndices.includes(idx)}

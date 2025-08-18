@@ -4,6 +4,8 @@ import { searchUsers, getFriends, getFollowers } from '../../services/userServic
 import { getUserById } from '../../services/userService'
 import SubscribeButton from '../profile/SubscribeButton'
 import ProfileModal from '../profile/ProfileModal'
+import { useNavigate } from 'react-router-dom'
+import Avatar from '../ui/Avatar'
 
 const PeopleList = ({ tab, search, userId }) => {
   const [users, setUsers] = useState([])
@@ -11,6 +13,7 @@ const PeopleList = ({ tab, search, userId }) => {
   const [error, setError] = useState(null)
 
   const [profileModal, setProfileModal] = useState({ open: false, user: null, loading: false, error: null })
+  const navigate = useNavigate()
 
   const handleCloseModal = useCallback(() => {
     setProfileModal({ open: false, user: null, loading: false, error: null })
@@ -69,7 +72,8 @@ const PeopleList = ({ tab, search, userId }) => {
   }
 
   const handleGoToChat = () => {
-    alert('Заглушка: перейти в чат')
+    navigate('/messenger')
+    handleCloseModal()
   }
 
   return (
@@ -77,10 +81,13 @@ const PeopleList = ({ tab, search, userId }) => {
       <div className="people-list">
         {filtered.map(user => (
           <div key={user.id} className="people-list-item" onClick={() => handleOpenProfile(user)} style={{cursor: 'pointer'}}>
-            <img
-              className="people-list-avatar"
-              src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.login)}&background=random`}
+            <Avatar
+              avatarKey={user.avatar_key}
+              userId={user.id}
+              isMyAvatar={false}
+              size={56}
               alt={user.login}
+              className="people-list-avatar"
             />
             <div className="people-list-info">
               <span className="people-list-login">{user.login}</span>
@@ -102,7 +109,13 @@ const PeopleList = ({ tab, search, userId }) => {
         error={profileModal.error}
         onClose={handleCloseModal}
         onGoToChat={handleGoToChat}
-        onGoToProfile={() => alert('Заглушка: перейти в профиль')}
+        onGoToProfile={() => {
+          const id = profileModal.user?.user_info?.id || profileModal.user?.id
+          if (id) {
+            navigate(`/profile/${encodeURIComponent(id)}`)
+            handleCloseModal()
+          }
+        }}
       />
     </>
   )

@@ -1,5 +1,6 @@
 import React from 'react'
 import { formatHistoryDateTime } from '../../utils/dateUtils'
+import Avatar from '../ui/Avatar'
 
 const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
@@ -21,11 +22,14 @@ const CommentItem = ({
   return (
     <div className="comment-item">
       <div className="comment-avatar">
-        {c.user_info?.avatar_url ? (
-          <img src={c.user_info.avatar_url} alt={c.user_info.login} />
-        ) : (
-          <span>{c.user_info?.login?.charAt(0).toUpperCase() || 'П'}</span>
-        )}
+        <Avatar
+          avatarKey={c.user_info?.avatar_key}
+          userId={c.user_info?.id}
+          isMyAvatar={false}
+          size={40}
+          alt={c.user_info?.login}
+          className="comment-avatar-img"
+        />
       </div>
       <div className="comment-content">
         <div className="comment-header">

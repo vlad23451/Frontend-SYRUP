@@ -6,7 +6,7 @@
  * Поддерживает перетаскивание через `useDraggableModal` и закрытие по ESC/бекдропу.
  */
 import React, { useEffect, useRef, useState } from 'react'
-import { useDraggableModal } from '../../hooks/ui/useDraggableModal'
+import { useDraggableModal } from '../../hooks/useDraggableModal'
 import ModalHeader from '../ui/ModalHeader'
 import ModalFooter from '../ui/ModalFooter'
 import EditHistoryForm from './EditHistoryForm'

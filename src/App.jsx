@@ -36,6 +36,8 @@ import SettingsModal from './components/settings/SettingsModal'
 import SettingsHubModal from './components/settings/SettingsHubModal'
 import DockSettingsModal from './components/settings/DockSettingsModal'
 import { SettingsProvider, useSettings } from './contexts/SettingsContext'
+import ProtectedRoute from './components/auth/ProtectedRoute'
+import ErrorBoundary from './components/ui/ErrorBoundary'
 
 import connectService from "./services/connectService"
 
@@ -68,20 +70,51 @@ const InitServices = () => {
 
 const App = () => {
     return (
-        <Router>
-          <SettingsProvider>
-            <div className="main-container">
-              <InitServices />
-              <main className="page-container">
+        <ErrorBoundary>
+          <Router>
+            <SettingsProvider>
+              <div className="main-container">
+                <InitServices />
+                <main className="page-container">
                 <Routes>
-                  <Route path="/" element={<Histories/>} />
                   <Route path="/login" element={<Login/>}/>
                   <Route path="/register" element={<Register/>}/>
-                  <Route path="/profile" element={<Profile/>} />
-                  <Route path="/profile/:id" element={<UserProfile/>} />
-                  <Route path="/people" element={<People/>} />
-                  <Route path="/following" element={<Following/>} />
-                  <Route path="/messenger" element={<Messenger/>}/>
+                  
+                  <Route path="/" element={
+                    <ProtectedRoute>
+                      <Histories/>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/profile" element={
+                    <ProtectedRoute>
+                      <Profile/>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/profile/:id" element={
+                    <ProtectedRoute>
+                      <UserProfile/>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/people" element={
+                    <ProtectedRoute>
+                      <People/>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/following" element={
+                    <ProtectedRoute>
+                      <Following/>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/messenger" element={
+                    <ProtectedRoute>
+                      <Messenger/>
+                    </ProtectedRoute>
+                  }/>
+                  <Route path="/messenger/:userId" element={
+                    <ProtectedRoute>
+                      <Messenger/>
+                    </ProtectedRoute>
+                  }/>
                 </Routes>
               </main>
               <Dock />
@@ -89,6 +122,7 @@ const App = () => {
             </div>
           </SettingsProvider>
         </Router>
+      </ErrorBoundary>
     )
 }
 

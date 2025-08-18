@@ -27,3 +27,9 @@ export const getChats = async () => {
 export const getChatMessages = async (companionLogin) => {
   return apiRequest(`/messages/chats/${companionLogin}/messages`)
 } 
+
+// История переписки с собеседником по его ID
+export const getMessageHistory = async (companionId, skip = 0, limit = 50) => {
+  const params = new URLSearchParams({ skip: String(skip), limit: String(limit) }).toString()
+  return apiRequest(`/messages/history/with/${companionId}?${params}`)
+}

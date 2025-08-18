@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import MessengerLayout from './MessengerLayout'
 import ModalHeader from '../ui/ModalHeader'
-import { useDraggableModal } from '../../hooks/ui/useDraggableModal'
+import { useDraggableModal } from '../../hooks/useDraggableModal'
 
 const MessengerModal = ({ open, selectedChat, onClose }) => {
   const containerRef = useRef(null)
