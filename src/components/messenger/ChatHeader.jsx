@@ -28,7 +28,7 @@ const ChatHeader = ({ selectedChat }) => {
           className="chat-user-avatar"
         />
         <div>
-          <div className="chat-user-name">{selectedChat.companion_login}</div>
+          <div className="chat-user-name">{selectedChat.title || selectedChat.companion_login}</div>
           <div className="chat-user-status">Онлайн</div>
         </div>
       </div>

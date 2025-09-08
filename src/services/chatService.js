@@ -24,12 +24,18 @@ export const getChats = async () => {
   return apiRequest('/messages/chats')
 }
 
-export const getChatMessages = async (companionLogin) => {
-  return apiRequest(`/messages/chats/${companionLogin}/messages`)
-} 
-
-// История переписки с собеседником по его ID
-export const getMessageHistory = async (companionId, skip = 0, limit = 50) => {
+// История переписки по chat_id
+export const getChatHistory = async (chatId, skip = 0, limit = 50) => {
   const params = new URLSearchParams({ skip: String(skip), limit: String(limit) }).toString()
-  return apiRequest(`/messages/history/with/${companionId}?${params}`)
+  return apiRequest(`/messages/history/chat/${chatId}?${params}`)
+}
+
+// Создание/получение chat_id для чата с пользователем
+export const getChatId = async (companionId) => {
+  return apiRequest('/ws/get_chat_id', {
+    method: 'POST',
+    body: JSON.stringify({
+      companion_id: companionId
+    })
+  })
 }

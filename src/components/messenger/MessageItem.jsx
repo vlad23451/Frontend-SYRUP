@@ -4,7 +4,9 @@ import { formatMessageDateParts } from '../../utils/dateUtils'
 const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 const MessageItem = ({ message, isOwn, index, onReply, onEdit, onDelete, onCopy, onPin, onForward, onSelect, selected }) => {
-  const { text, file, time } = message
+  const { text, file, time, timestamp } = message
+  // Используем timestamp если есть, иначе time для обратной совместимости
+  const messageTime = timestamp || time
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef(null)
 
@@ -17,7 +19,7 @@ const MessageItem = ({ message, isOwn, index, onReply, onEdit, onDelete, onCopy,
     return () => window.removeEventListener('mousedown', onDocClick)
   }, [menuOpen])
   return (
-      <div className={`message-item ${isOwn ? 'own' : ''} ${selected ? 'selected' : ''}`} onClick={(e) => { if (selected !== undefined) onSelect?.(index, message) }}>
+      <div id={`${messageTime}`} className={`message-item ${isOwn ? 'own' : ''} ${selected ? 'selected' : ''}`} onClick={(e) => { if (selected !== undefined) onSelect?.(index, message) }}>
       <div className="message-content" style={{ position: 'relative' }}>
         {message.replyTo && (
           <div className="message-reply">
@@ -96,7 +98,29 @@ const MessageItem = ({ message, isOwn, index, onReply, onEdit, onDelete, onCopy,
           </div>
         )}
         <div className="message-time">
-          {formatMessageDateParts(time, userTimezone).time}
+          {formatMessageDateParts(messageTime, userTimezone).time}
+          {isOwn && (
+            <span
+              className={`read-status ${message.is_read ? 'read' : 'unread'}`}
+              title={message.is_read ? 'Прочитано' : 'Не прочитано'}
+              aria-label={message.is_read ? 'Прочитано' : 'Не прочитано'}
+            >
+              {message.is_read ? (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <polyline points="22 8 11 19 6 14"/>
+                  </svg>
+                </>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              )}
+            </span>
+          )}
         </div>
       </div>
     </div>

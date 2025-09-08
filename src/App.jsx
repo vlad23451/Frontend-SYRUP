@@ -38,8 +38,26 @@ import DockSettingsModal from './components/settings/DockSettingsModal'
 import { SettingsProvider, useSettings } from './contexts/SettingsContext'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import ErrorBoundary from './components/ui/ErrorBoundary'
+import { ProfileModalProvider } from './contexts/ProfileModalContext'
+import ProfileModal from './components/profile/ProfileModal'
+import { useProfileModal } from './contexts/ProfileModalContext'
 
 import connectService from "./services/connectService"
+
+const GlobalProfileModal = () => {
+  const { modalState, closeProfileModal, handleGoToChat, handleGoToProfile } = useProfileModal()
+  return (
+    <ProfileModal
+      open={modalState.open}
+      user={modalState.user}
+      loading={modalState.loading}
+      error={modalState.error}
+      onClose={closeProfileModal}
+      onGoToChat={handleGoToChat}
+      onGoToProfile={handleGoToProfile}
+    />
+  )
+}
 
 const SettingsPortals = () => {
     const { isOpen, activeSection, close } = useSettings()
@@ -73,7 +91,8 @@ const App = () => {
         <ErrorBoundary>
           <Router>
             <SettingsProvider>
-              <div className="main-container">
+              <ProfileModalProvider>
+                <div className="main-container">
                 <InitServices />
                 <main className="page-container">
                 <Routes>
@@ -119,7 +138,9 @@ const App = () => {
               </main>
               <Dock />
               <SettingsPortals />
+              <GlobalProfileModal />
             </div>
+              </ProfileModalProvider>
           </SettingsProvider>
         </Router>
       </ErrorBoundary>

@@ -4,6 +4,7 @@ import ChatStore from './ChatStore'
 import MessagesStore from './MessagesStore'
 import ProfileStore from './ProfileStore'
 import UserProfileStore from './UserProfileStore'
+import WebSocketStore from './WebSocketStore'
 
 class RootStore {
   constructor() {
@@ -13,6 +14,7 @@ class RootStore {
     this.messages = MessagesStore
     this.profile = ProfileStore
     this.userProfile = UserProfileStore
+    this.websocket = WebSocketStore
   }
 }
 

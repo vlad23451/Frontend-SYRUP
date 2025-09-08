@@ -1,19 +1,22 @@
 import React, { useState } from 'react'
 
-const MessageInput = ({ onSend, replyTo, onCancelReply }) => {
+const MessageInput = ({ onSend, replyTo, onCancelReply, disabled = false }) => {
   const [input, setInput] = useState('')
   const [selectedFile, setSelectedFile] = useState(null)
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (input.trim() || selectedFile) {
+    
+    if ((input.trim() || selectedFile) && !disabled) {
       onSend(input, selectedFile)
       setInput('')
       setSelectedFile(null)
+    } else {
     }
   }
 
   const handleFileSelect = (e) => {
+    if (disabled) return
     const file = e.target.files[0]
     if (file) {
       setSelectedFile(file)
@@ -41,28 +44,31 @@ const MessageInput = ({ onSend, replyTo, onCancelReply }) => {
             type="button" 
             className="remove-file-btn"
             onClick={() => setSelectedFile(null)}
+            disabled={disabled}
           >
             ×
           </button>
         </div>
       )}
       <div className="message-input-container">
-        <label className="attach-file-btn">
+        <label className={`attach-file-btn ${disabled ? 'disabled' : ''}`}>
           <input
             type="file"
             onChange={handleFileSelect}
             style={{ display: 'none' }}
+            disabled={disabled}
           />
           📎
         </label>
         <input
           type="text"
-          className="message-input"
-          placeholder="Введите сообщение..."
+          className={`message-input ${disabled ? 'disabled' : ''}`}
+          placeholder={disabled ? "Подключение к чату..." : "Введите сообщение..."}
           value={input}
           onChange={e => setInput(e.target.value)}
+          disabled={disabled}
         />
-        <button type="submit" className="send-btn">
+        <button type="submit" className={`send-btn ${disabled ? 'disabled' : ''}`} disabled={disabled}>
           ➤
         </button>
       </div>

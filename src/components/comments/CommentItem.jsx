@@ -1,6 +1,7 @@
 import React from 'react'
 import { formatHistoryDateTime } from '../../utils/dateUtils'
 import Avatar from '../ui/Avatar'
+import { useProfileModal } from '../../contexts/ProfileModalContext'
 
 const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
@@ -19,21 +20,31 @@ const CommentItem = ({
   isOwnComment,
 }) => {
   const c = comment
+  const { openProfileModal } = useProfileModal()
+  const userId = c?.user_info?.id
+  const handleOpenProfile = (e) => {
+    e.stopPropagation()
+    if (userId) openProfileModal(userId)
+  }
   return (
     <div className="comment-item">
       <div className="comment-avatar">
-        <Avatar
-          avatarKey={c.user_info?.avatar_key}
-          userId={c.user_info?.id}
-          isMyAvatar={false}
-          size={40}
-          alt={c.user_info?.login}
-          className="comment-avatar-img"
-        />
+        <div style={{cursor:'pointer', width:'100%', height:'100%'}} onClick={handleOpenProfile} title="Открыть профиль">
+          <Avatar
+            avatarKey={c.user_info?.avatar_key}
+            userId={c.user_info?.id}
+            isMyAvatar={false}
+            size={40}
+            alt={c.user_info?.login}
+            className="comment-avatar-img"
+          />
+        </div>
       </div>
       <div className="comment-content">
         <div className="comment-header">
-          <span className="comment-author">{c.user_info?.login || 'Пользователь'}</span>
+          <span className="comment-author" style={{cursor:'pointer'}} onClick={handleOpenProfile} title="Открыть профиль">
+            {c.user_info?.login || 'Пользователь'}
+          </span>
           <span className="comment-time">{formatHistoryDateTime(c.created_at, userTimezone)}</span>
         </div>
         {editingComment === c.id ? (

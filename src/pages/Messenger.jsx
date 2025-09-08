@@ -27,7 +27,7 @@
  */
 
 import { useEffect } from 'react'
-import { useLocation, useParams } from 'react-router-dom'
+import { useLocation, useParams, useNavigate } from 'react-router-dom'
 import { observer } from 'mobx-react-lite'
 import { useStore } from '../stores/StoreContext'
 import MessengerPanel from '../components/messenger/MessengerPanel'
@@ -37,6 +37,7 @@ const Messenger = observer(() => {
   const { chat } = useStore()
   const location = useLocation()
   const { userId } = useParams()
+  const navigate = useNavigate()
 
   useEffect(() => {
     chat.fetchChats()
@@ -54,24 +55,38 @@ const Messenger = observer(() => {
     let cancelled = false
     const syncFromRoute = async () => {
       const routeId = userId
-      if (!routeId) return
+      
+      if (!routeId) {
+        // Если нет userId в URL, очищаем выбранный чат
+        if (chat.selectedChat) {
+          chat.selectChat(null)
+        }
+        return
+      }
+      
       const items = Array.isArray(chat.items) ? chat.items : []
 
-      // Treat routeId as login first
-      let login = routeId
-      let found = items.find(c => c.companion_login === login)
+      // Сначала ищем по companion_id (числовой ID)
+      let found = items.find(c => c.companion_id?.toString() === routeId)
 
       if (!found) {
-        // Try resolve numeric id → user login via API
+        // Затем ищем по companion_login
+        found = items.find(c => c.companion_login === routeId)
+      }
+
+      if (!found) {
+        // Если не нашли в существующих чатах, пробуем получить пользователя по API
         try {
           const user = await getUserById(routeId)
           const resolvedLogin = user?.user_info?.login || user?.login
           if (resolvedLogin) {
-            login = resolvedLogin
-            found = (Array.isArray(chat.items) ? chat.items : []).find(c => c.companion_login === login)
+            // Проверяем, есть ли уже чат с этим пользователем
+            found = items.find(c => c.companion_login === resolvedLogin)
+            
             if (!found) {
+              // Создаем синтетический чат
               const synthetic = {
-                companion_login: login,
+                companion_login: resolvedLogin,
                 companion_avatar_key: user?.avatar_key || user?.avatar,
                 companion_id: user?.id || user?.user_info?.id,
                 last_message: '',
@@ -86,9 +101,10 @@ const Messenger = observer(() => {
             }
           }
         } catch (e) {
-          // If failed to resolve, still create synthetic chat using routeId as login
+          console.error('Ошибка при получении пользователя:', e)
+          // Если не удалось получить пользователя, создаем чат с routeId как логином
           const synthetic = {
-            companion_login: login,
+            companion_login: routeId,
             companion_avatar_key: undefined,
             last_message: '',
             last_message_time: null,

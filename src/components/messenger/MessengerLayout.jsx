@@ -1,14 +1,18 @@
 import React, { useRef, useState } from 'react'
 import { observer } from 'mobx-react-lite'
+import { useNavigate } from 'react-router-dom'
 import MessageList from './MessageList'
 import MessageInput from './MessageInput'
 import { useMessengerController } from '../../hooks/messenger/useMessengerController'
 import { useDraggableModal } from '../../hooks/useDraggableModal'
 import ModalHeader from '../ui/ModalHeader'
 import Avatar from '../ui/Avatar'
+import { useStore } from '../../stores/StoreContext'
 
 const MessengerLayout = observer(({ selectedChat }) => {
   const ctrl = useMessengerController(selectedChat)
+  const { chat } = useStore()
+  const navigate = useNavigate()
   const [attachmentsOpen, setAttachmentsOpen] = useState(false)
   const [muteOpen, setMuteOpen] = useState(false)
   const [muteValue, setMuteValue] = useState('1h')
@@ -22,6 +26,11 @@ const MessengerLayout = observer(({ selectedChat }) => {
   useDraggableModal(muteOpen, muteContainerRef, muteHandleRef)
 
   const isNewDialog = !selectedChat
+  const isLoadingRoom = chat.loadingChatId
+
+  const handleBackClick = () => {
+    navigate('/messenger')
+  }
 
   const defaultAvatar = (
     <svg width="56" height="56" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -33,6 +42,30 @@ const MessengerLayout = observer(({ selectedChat }) => {
   return (
     <div className="messenger-main">
       <div className="chat-header" style={{ display: 'flex', alignItems: 'center' }}>
+        {selectedChat && (
+          <button 
+            type="button" 
+            className="chat-header-back-btn" 
+            onClick={handleBackClick}
+            title="Назад к списку чатов"
+            style={{ 
+              marginRight: 12, 
+              padding: 8, 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--color-text)'
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+        )}
         <Avatar
           avatarKey={selectedChat?.companion_avatar_key}
           userId={selectedChat?.companion_id}
@@ -43,7 +76,14 @@ const MessengerLayout = observer(({ selectedChat }) => {
         />
         <div className="chat-user-info" style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
           <div className="chat-user-name-row" style={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
-            <div className="chat-user-name" style={{ marginRight: 16 }}>{selectedChat?.companion_login || 'Новый диалог'}</div>
+            <div className="chat-user-name" style={{ marginRight: 16 }}>
+              {selectedChat?.title || selectedChat?.companion_login || 'Новый диалог'}
+              {isLoadingRoom && (
+                <span style={{ marginLeft: 8, fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                  Подключение...
+                </span>
+              )}
+            </div>
             <div className="chat-user-status online">{isNewDialog ? '-' : 'в сети'}</div>
           </div>
         </div>
@@ -88,7 +128,12 @@ const MessengerLayout = observer(({ selectedChat }) => {
         </div>
       </div>
       <div className="messages-container">
-        {isNewDialog && ctrl.messages.items.length === 0 ? (
+        {isLoadingRoom ? (
+          <div className="messages-list-empty">
+            <h3>Подключение к чату...</h3>
+            <p>Ожидание ответа от сервера</p>
+          </div>
+        ) : isNewDialog && ctrl.messages.items.length === 0 ? (
           <div className="messages-list-empty">
             <h3>Новый диалог</h3>
             <p>Напишите первое сообщение, чтобы начать переписку</p>
@@ -106,7 +151,7 @@ const MessengerLayout = observer(({ selectedChat }) => {
             )}
             <MessageList 
               messages={ctrl.messages.items || []} 
-              username={selectedChat?.companion_login || 'Новый диалог'}
+              username={selectedChat?.title || selectedChat?.companion_login || 'Новый диалог'}
               onDeleteAt={ctrl.handleDeleteAt}
               onReply={ctrl.handleReply}
               onSelectToggle={ctrl.toggleSelect}
@@ -217,7 +262,12 @@ const MessengerLayout = observer(({ selectedChat }) => {
         </div>
       )}
       <div className="chat-divider" />
-      <MessageInput onSend={ctrl.handleSend} replyTo={ctrl.replyingTo} onCancelReply={ctrl.handleCancelReply} />
+      <MessageInput 
+        onSend={ctrl.handleSend} 
+        replyTo={ctrl.replyingTo} 
+        onCancelReply={ctrl.handleCancelReply}
+        disabled={isLoadingRoom}
+      />
     </div>
   )
 })

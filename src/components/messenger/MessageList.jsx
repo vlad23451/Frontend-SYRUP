@@ -13,7 +13,9 @@ const MessageList = ({ messages, username, onDeleteAt, onReply, onSelectToggle, 
   const groups = (() => {
     const map = new Map()
     for (const m of messages) {
-      const key = formatMessageDateParts(m.time).label
+      // Используем timestamp если есть, иначе time для обратной совместимости
+      const messageTime = m.timestamp || m.time
+      const key = formatMessageDateParts(messageTime).label
       if (!map.has(key)) map.set(key, [])
       map.get(key).push(m)
     }
@@ -36,7 +38,7 @@ const MessageList = ({ messages, username, onDeleteAt, onReply, onSelectToggle, 
               key={`${label}-${idx}`}
               index={idx}
               message={msg}
-              isOwn={msg.user !== username}
+              isOwn={msg.from_me}
               onReply={(_, m) => { onReply?.(m) }}
               onCopy={() => { try { navigator.clipboard.writeText(msg.text || '') } catch {} }}
               onEdit={() => { /* TODO: открыть инлайн-редактор */ }}

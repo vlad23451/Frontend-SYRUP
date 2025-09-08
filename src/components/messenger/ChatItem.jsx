@@ -26,7 +26,7 @@ const ChatItem = ({ chat, isActive, onSelect = () => {} }) => (
       className="chat-avatar"
     />
     <div className="chat-info">
-      <div className="chat-login">{chat.companion_login}</div>
+      <div className="chat-login">{chat.title || chat.companion_login}</div>
       <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
         <div className="chat-message" style={{flex: 1}}>{chat.last_message}</div>
         <div className="chat-time" style={{marginLeft: 12, whiteSpace: 'nowrap', fontSize: 13, color: 'rgba(255,255,255,0.5)'}}>

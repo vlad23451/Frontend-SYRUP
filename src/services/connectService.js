@@ -1,55 +1,54 @@
 import { apiRequest } from '../utils/apiUtils'
+import WebSocketStore from '../stores/WebSocketStore'
 
 const connectService = async () => {
-    // Используем WebSocket URL для LocalTunnel (замените на ваш актуальный URL)
-    const wsUrl = 'wss://myprojectfastapi.loca.lt/ws/'
+    //const wsUrl = 'wss://myprojectfastapi.loca.lt/ws/'
+    const wsUrl = 'ws://localhost:8000/ws/'
     const connect = new window.WebSocket(wsUrl)
 
     connect.onopen = async () => {
-        console.log('🔌 WebSocket connection opened')
+        WebSocketStore.setConnection(connect)
+        WebSocketStore.setConnected(true)
+        
         try {
-            // Получаем токен через API эндпоинт
-            console.log('🔑 Requesting access token from /auth/token...')
             const tokenResponse = await apiRequest('/auth/token', {
                 method: 'GET'
             })
             
-            const access_token = tokenResponse.access_token
-            
-            if (access_token) {
-                console.log('✅ Access token received, sending to WebSocket')
-                connect.send(JSON.stringify({
+            if (tokenResponse.access_token) {
+                const tokenMessage = {
                     type: 'access_token',
-                    "token": access_token
-                }))
-                console.log('📤 Token sent to WebSocket successfully')
+                    "token": tokenResponse.access_token
+                }
+                connect.send(JSON.stringify(tokenMessage))
             } else {
-                console.error('❌ No access token received from /auth/token:', tokenResponse)
+                console.warn('Нет access_token в ответе')
             }
         } catch (error) {
-            console.error('❌ Failed to get access token for WebSocket:', error.message)
+            console.error('Ошибка получения токена:', error)
+            WebSocketStore.setError('Ошибка аутентификации')
         }
     }
 
     connect.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data)
-            console.log('📨 WebSocket message received:', data)
+            
+            WebSocketStore.handleIncomingMessage(data)
         } catch (error) {
-            console.error('❌ Failed to parse WebSocket message:', error)
+            console.error('❌ Ошибка парсинга WebSocket сообщения:', error)
         }
     }
 
     connect.onclose = (event) => {
-        console.log('🔌 WebSocket connection closed:', {
-            code: event.code,
-            reason: event.reason,
-            wasClean: event.wasClean
-        })
+        WebSocketStore.setConnected(false)
+        WebSocketStore.setConnection(null)
     }
 
     connect.onerror = (error) => {
-        console.error('❌ WebSocket error:', error)
+        console.error('❌ WebSocket ошибка:', error)
+        WebSocketStore.setError('Ошибка WebSocket соединения')
+        WebSocketStore.setConnected(false)
     }
 
     return connect

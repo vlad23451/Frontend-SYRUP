@@ -1,10 +1,12 @@
 import React from 'react'
 import { formatHistoryDateTime } from '../../utils/dateUtils'
 import Avatar from '../ui/Avatar'
+import { useProfileModal } from '../../contexts/ProfileModalContext'
 
 const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 const HistoryPreview = ({ history }) => {
+  const { openProfileModal } = useProfileModal()
   if (!history) return null
   const author = history?.author || history?.user || history?.user_info || null
   const authorLogin = author?.login || history?.author_login || history?.login || 'Автор'
@@ -12,16 +14,18 @@ const HistoryPreview = ({ history }) => {
   return (
     <div className="history-preview">
       <div className="history-preview-author">
-        <Avatar
-          avatarKey={rawAvatarKey}
-          userId={author?.id || history?.author_id}
-          isMyAvatar={false}
-          size={40}
-          alt={authorLogin}
-          className="history-preview-avatar"
-        />
+        <div style={{cursor:'pointer'}} onClick={() => { const id = author?.id || history?.author_id; if (id) openProfileModal(id) }} title="Открыть профиль">
+          <Avatar
+            avatarKey={rawAvatarKey}
+            userId={author?.id || history?.author_id}
+            isMyAvatar={false}
+            size={40}
+            alt={authorLogin}
+            className="history-preview-avatar"
+          />
+        </div>
         <div className="history-preview-meta">
-          <div className="history-preview-login">{authorLogin}</div>
+          <div className="history-preview-login" style={{cursor:'pointer'}} onClick={() => { const id = author?.id || history?.author_id; if (id) openProfileModal(id) }} title="Открыть профиль">{authorLogin}</div>
           {history.created_at && (
             <div className="history-preview-date">
               {formatHistoryDateTime(history.created_at, userTimezone)}

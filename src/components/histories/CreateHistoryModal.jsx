@@ -6,7 +6,17 @@ import ModalFooter from '../ui/ModalFooter'
 import CreateHistoryForm from './CreateHistoryForm'
 
 const CreateHistoryModal = ({ isOpen, onClose, onSuccess, authorId }) => {
-  const { formData, loading, error, handleChange, handleSubmit, handleClose } = useCreateHistoryForm(authorId, onSuccess, onClose)
+  const { 
+    formData, 
+    loading, 
+    error, 
+    handleChange, 
+    handleSubmit, 
+    handleClose,
+    attachedFiles,
+    handleFilesChange,
+    setMediaError
+  } = useCreateHistoryForm(authorId, onSuccess, onClose)
 
   // hooks must be declared unconditionally
   const containerRef = useRef(null)
@@ -53,6 +63,9 @@ const CreateHistoryModal = ({ isOpen, onClose, onSuccess, authorId }) => {
             error={error}
             handleChange={handleChange}
             handleSubmit={handleSubmit}
+            attachedFiles={attachedFiles}
+            handleFilesChange={handleFilesChange}
+            setMediaError={setMediaError}
           />
         </div>
         

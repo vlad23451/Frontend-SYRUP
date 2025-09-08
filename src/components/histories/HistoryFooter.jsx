@@ -11,7 +11,7 @@ const HistoryFooter = ({ history }) => {
   return (
     <div className="history-meta">
       <div className="history-date">
-        <span>✏️ Изменено: {updated.date} в {updated.time}</span>
+        <span>{updated.date} в {updated.time} (изменено)</span>
       </div>
     </div>
   )

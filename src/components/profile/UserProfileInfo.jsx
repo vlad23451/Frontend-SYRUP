@@ -2,8 +2,10 @@ import React, { useCallback, useState } from 'react'
 import UsersListModal from './UsersListModal'
 import SubscribeButton from './SubscribeButton'
 import { getFriends, getFollowers, getFollowing } from '../../services/userService'
+import { useProfileModal } from '../../contexts/ProfileModalContext'
 
 const UserProfileInfo = ({ user }) => {
+  const { openProfileModal } = useProfileModal()
   const [modal, setModal] = useState({ open: false, title: '', loading: false, error: null, users: [] })
 
   const openModal = useCallback(async (type) => {
@@ -53,7 +55,11 @@ const UserProfileInfo = ({ user }) => {
         loading={modal.loading}
         error={modal.error}
         onClose={closeModal}
-        onUserClick={(u) => { window.location.href = `/profile/${u.user_info?.id || u.id}` }}
+        onUserClick={(u) => {
+          const userId = u.user_info?.id || u.id
+          closeModal()
+          openProfileModal(userId)
+        }}
         onActionRender={(u) => {
           const followStatus = u?.user_info?.follow_status || u?.follow_status
           const targetId = u?.user_info?.id || u?.id

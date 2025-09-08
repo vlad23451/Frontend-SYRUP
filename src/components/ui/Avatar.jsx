@@ -72,9 +72,9 @@ const Avatar = ({
         src={avatarSrc} 
         alt={alt}
         className={`avatar-img ${className}`}
-        width={size}
-        height={size}
         style={{
+          width: size,
+          height: size,
           borderRadius: '50%',
           objectFit: 'cover',
           ...style

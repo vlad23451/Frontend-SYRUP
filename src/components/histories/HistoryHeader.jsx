@@ -1,10 +1,9 @@
-import { useNavigate } from 'react-router-dom'
 import { useProfile } from '../../hooks/useProfile'
-import ProfileModal from '../profile/ProfileModal'
+import { useProfileModal } from '../../contexts/ProfileModalContext'
 
 const HistoryHeader = ({ history, forceMeAsAuthor = false, overrideAuthor }) => {
-  const { profileModal, getAuthorInfo, handleProfileClick, handleCloseProfileModal } = useProfile()
-  const navigate = useNavigate()
+  const { getAuthorInfo } = useProfile()
+  const { openProfileModal } = useProfileModal()
   const { displayLogin, displayAvatar, targetUserId } = getAuthorInfo(history, {
     forceMeAsAuthor,
     overrideAuthorId: overrideAuthor?.id,
@@ -14,7 +13,7 @@ const HistoryHeader = ({ history, forceMeAsAuthor = false, overrideAuthor }) => 
 
   const handleAuthorClick = (e) => {
     e.stopPropagation()
-    handleProfileClick(targetUserId)
+    openProfileModal(targetUserId)
   }
 
   return (
@@ -35,21 +34,8 @@ const HistoryHeader = ({ history, forceMeAsAuthor = false, overrideAuthor }) => 
         </div>
       </div>
       <div className="history-title-row">
-        <span className="history-label">Заголовок:</span>
         <span className="history-title-text">{history.title}</span>
       </div>
-      <ProfileModal
-        open={profileModal.open}
-        user={profileModal.user}
-        loading={profileModal.loading}
-        error={profileModal.error}
-        onClose={handleCloseProfileModal}
-        onGoToChat={() => { navigate(`/messenger/${targetUserId}`) }}
-        onGoToProfile={() => {
-          const uid = profileModal?.user?.id || profileModal?.user?.user_info?.id
-          if (uid) window.location.href = `/profile/${uid}`
-        }}
-      />
     </>
   )
 }

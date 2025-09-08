@@ -336,6 +336,228 @@
   font-size: 0.85em;
 }
 
+/* Медиа компоненты */
+.media-upload {
+  margin-top: 8px;
+}
+
+.media-upload-error {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  border-radius: var(--border-radius);
+  color: #dc3545;
+  font-size: 0.875rem;
+}
+
+.media-upload-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.media-upload-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  transition: background var(--transition);
+}
+
+.media-upload-item.uploading {
+  opacity: 0.7;
+  background: rgba(13, 110, 253, 0.05);
+  border-color: rgba(13, 110, 253, 0.2);
+}
+
+.media-upload-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.media-upload-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.media-upload-name {
+  font-weight: 500;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  word-break: break-word;
+}
+
+.media-upload-size,
+.media-upload-status {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.media-upload-remove {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition), color var(--transition);
+}
+
+.media-upload-remove:hover {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.media-upload-remove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Медиа превью */
+.media-preview {
+  margin-bottom: 12px;
+}
+
+.media-preview-loading,
+.media-preview-error {
+  padding: 12px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.media-preview-error {
+  color: #dc3545;
+}
+
+.media-preview-grid {
+  display: grid;
+  gap: 12px;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.media-preview-grid.single {
+  grid-template-columns: 1fr;
+}
+
+.media-preview-grid.double {
+  grid-template-columns: 1fr 1fr;
+}
+
+.media-preview-grid.multiple {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.media-preview-item {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  transition: background var(--transition);
+}
+
+.media-preview-img,
+.media-preview-video {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 400px;
+  object-fit: cover;
+}
+
+.media-preview-audio {
+  width: 100%;
+  height: 48px;
+}
+
+.media-audio-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.media-audio-icon {
+  font-size: 1.25rem;
+}
+
+.media-audio-name {
+  font-weight: 500;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  word-break: break-word;
+}
+
+.media-document-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  text-decoration: none;
+  color: var(--color-text);
+  transition: background var(--transition);
+}
+
+.media-document-link:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+}
+
+.media-document-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.media-document-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.media-document-name {
+  font-weight: 500;
+  font-size: 0.875rem;
+  word-break: break-word;
+}
+
+.media-document-size {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.media-document-download {
+  font-size: 1.25rem;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.media-preview-caption {
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+  border-top: 1px solid var(--color-border);
+}
+
 @media (max-width: 768px) {
   .histories-container {
     margin: 0 10px;
@@ -361,5 +583,19 @@
   .history-actions-left,
   .history-actions-right {
     justify-content: center;
+  }
+
+  .media-preview-grid.double,
+  .media-preview-grid.multiple {
+    grid-template-columns: 1fr;
+  }
+  
+  .media-upload-item {
+    padding: 6px 8px;
+    gap: 8px;
+  }
+  
+  .media-document-info {
+    gap: 1px;
   }
 }

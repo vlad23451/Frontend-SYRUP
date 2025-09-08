@@ -86,9 +86,9 @@ const HistoryActions = ({
           style={{ fontSize: '14px' }}
         >
           {hasUpdate ? (
-            <>📝 Изменено: {updatedAtStr}</>
+            <>{updatedAtStr} (ред.)</>
           ) : (
-            <>🕓 Опубликовано: {publishedAtStr}</>
+            <>{publishedAtStr}</>
           )}
         </div>
       </div>

@@ -23,12 +23,15 @@
  * 
  * @author SYRUP CHAT Team
  * @version 1.0.0
- * const BASE_URL = 'http://localhost:8000'
+ * 
+ * 
  */
 
 import authStore from "../stores/AuthStore"
 
-const BASE_URL = 'https://myprojectfastapi.loca.lt'
+//const BASE_URL = 'https://myprojectfastapi.loca.lt'
+
+const BASE_URL = 'http://localhost:8000'
 
 export const apiRequest = async (endpoint, options = {}) => {
   const isGet = !options.method || options.method === "GET"

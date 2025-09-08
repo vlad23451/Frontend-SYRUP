@@ -1,55 +1,149 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useStore } from '../../stores/StoreContext'
+import { getChatId } from '../../services/chatService'
 
-export const useMessengerController = (selectedChat) => {
-  const { messages } = useStore()
+export const useMessengerController = (selectedChat) => { 
+  const { messages, chat, websocket, auth } = useStore()
   const [showCallMenu, setShowCallMenu] = useState(false)
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const [replyingTo, setReplyingTo] = useState(null)
   const [selectedIndices, setSelectedIndices] = useState([])
+  const lastMarkSentRef = useRef({ chatId: null, until: null })
 
   useEffect(() => {
     let cancelled = false
     const run = async () => {
-      // Очистить при отсутствии выбранного чата
       if (!selectedChat) {
         messages.clearMessages?.()
         return
       }
-      // Загрузка истории при выборе чата
+      
       try {
-        const companionId = selectedChat.companion_id || selectedChat.companionId || selectedChat.id
-        if (companionId) {
-          await messages.fetchHistoryByCompanionId?.(companionId, 0, 50)
-        } else if (selectedChat.companion_login) {
-          await messages.fetchMessages?.(selectedChat.companion_login)
+        if (selectedChat.chat_id) {
+          await messages.fetchHistoryByChatId?.(selectedChat.chat_id, 0, 50)
         } else {
-          messages.clearMessages?.()
+          const companionId = selectedChat.companion_id || selectedChat.companionId || selectedChat.id
+          if (companionId) {
+            chat.setLoadingChatId(true)
+            
+            try {
+              const chatId = await websocket.sendJoinChat(companionId)
+              
+              const updatedChat = {
+                ...selectedChat,
+                chat_id: chatId
+              }
+              
+              const updatedItems = chat.items.map(item => 
+                item === selectedChat ? updatedChat : item
+              )
+              chat.setItems(updatedItems)
+              chat.selectChat(updatedChat)
+              
+              await messages.fetchHistoryByChatId?.(chatId, 0, 50)
+              
+            } catch (error) {
+              console.error('Ошибка получения chat_id через WebSocket:', error)
+              await messages.fetchHistoryByCompanionId?.(companionId, 0, 50)
+            } finally {
+              chat.setLoadingChatId(false)
+            }
+          } else if (selectedChat.companion_login) {
+          await messages.fetchMessages?.(selectedChat.companion_login)
+          } else {
+            messages.clearMessages?.()
+          }
         }
       } catch (e) {
-        // no-op
+        console.error('Ошибка при загрузке истории чата:', e)
       }
       if (cancelled) return
     }
     run()
     return () => { cancelled = true }
-  }, [selectedChat, messages])
+  }, [selectedChat, messages, websocket, chat])
 
-  const handleSend = useCallback((text, file) => {
-    if (!text?.trim() && !file) return
-    messages.addMessage({ 
-      user: 'Вы', 
-      text, 
-      file, 
-      time: new Date().toISOString(),
-      replyTo: replyingTo ? {
-        user: replyingTo.user,
-        text: replyingTo.text,
-        time: replyingTo.time,
-      } : undefined
-    })
-    setReplyingTo(null)
-  }, [messages, replyingTo])
+  useEffect(() => {
+    try {
+      const currentChatId = chat.selectedChat?.chat_id
+      const userId = localStorage.getItem('user_id')
+      if (!currentChatId || !userId) return
+
+      const items = messages.items || []
+      const unreadIncoming = items.filter(m => !m.from_me && (m.is_read === false || m.is_read === undefined))
+      if (unreadIncoming.length === 0) return
+
+      const lastUnread = unreadIncoming[unreadIncoming.length - 1]
+      const untilTimestamp = lastUnread?.timestamp || lastUnread?.time
+      if (!untilTimestamp) return
+
+      const prev = lastMarkSentRef.current
+      if (prev && prev.chatId === currentChatId && prev.until === untilTimestamp) return
+
+      websocket.sendMarkAsRead(currentChatId, userId, untilTimestamp)
+      lastMarkSentRef.current = { chatId: currentChatId, until: untilTimestamp }
+    } catch (e) {
+      console.error('Ошибка при отправке mark_as_read:', e)
+    }
+  }, [messages.items, chat.selectedChat, websocket])
+
+  const handleSend = useCallback(async (text, file) => {
+    if (!text?.trim() && !file) {
+      return
+    }
+    if (!selectedChat) {
+      return
+    }
+
+    try {
+      const senderId = localStorage.getItem('user_id')
+      if (!senderId) {
+        console.error('Нет senderId для отправки сообщения')
+        return
+      }
+      let chatId = selectedChat.chat_id
+            
+      if (!chatId) {
+        const companionId = selectedChat.companion_id || selectedChat.companionId || selectedChat.id
+        if (!companionId) {
+          console.error('Нет companionId для чата')
+          return
+        }
+
+        try {
+          chatId = await websocket.sendJoinChat(companionId)
+          
+          const updatedChat = {
+            ...selectedChat,
+            is_temporary: false,
+            chat_id: chatId,
+            companion_id: companionId
+          }
+          
+          const updatedItems = chat.items.map(item => 
+            item === selectedChat ? updatedChat : item
+          )
+          chat.setItems(updatedItems)
+          chat.selectChat(updatedChat)
+          
+        } catch (error) {
+          console.error('Ошибка получения chat_id через WebSocket:', error)
+          return
+        }
+      }
+      
+      const sendMessageSuccess = websocket.sendTextMessage(senderId, chatId, text)
+
+      if (!sendMessageSuccess) {
+        console.error('Ошибка отправки сообщения через WebSocket')
+        return
+      }
+
+      setReplyingTo(null)      
+    } catch (error) {
+      console.error('Ошибка при отправке сообщения:', error)
+    }
+  }, [messages, replyingTo, chat, websocket, auth, selectedChat])
 
   const handleDeleteAt = useCallback((index) => {
     messages.removeMessageAt?.(index)
@@ -90,7 +184,7 @@ export const useMessengerController = (selectedChat) => {
   const unpinById = useCallback((id) => {
     messages.unpinMessageById?.(id)
   }, [messages])
-
+  
   return {
     messages,
     showCallMenu,
@@ -119,5 +213,3 @@ export const useMessengerController = (selectedChat) => {
     getPinned: () => messages.getPinnedMessages?.() || [],
   }
 }
-
-

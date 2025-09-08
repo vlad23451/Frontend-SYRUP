@@ -1,10 +1,7 @@
-import { useState, useCallback } from 'react'
 import { useStore } from '../stores/StoreContext'
-import { getUserById } from '../services/userService'
 
 export const useProfile = () => {
   const { auth } = useStore()
-  const [profileModal, setProfileModal] = useState({ open: false, user: null, loading: false, error: null })
 
   const currentUserId = auth?.user?.id
   const myLogin = auth?.user?.login || 'Вы'
@@ -49,29 +46,10 @@ export const useProfile = () => {
     }
   }
 
-  const handleProfileClick = useCallback(async (targetUserId) => {
-    if (!targetUserId) return
-    
-    setProfileModal({ open: true, user: null, loading: true, error: null })
-    try {
-      const user = await getUserById(targetUserId)
-      setProfileModal({ open: true, user: user, loading: false, error: null })
-    } catch (error) {
-      setProfileModal({ open: true, user: null, loading: false, error: error.message })
-    }
-  }, [])
-
-  const handleCloseProfileModal = useCallback(() => {
-    setProfileModal({ open: false, user: null, loading: false, error: null })
-  }, [])
-
   return {
-    profileModal,
     currentUserId,
     myLogin,
     myAvatar,
-    getAuthorInfo,
-    handleProfileClick,
-    handleCloseProfileModal
+    getAuthorInfo
   }
 }

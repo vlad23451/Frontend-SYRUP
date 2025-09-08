@@ -1,6 +1,3 @@
-// CRACO (Create React App Configuration Override)
-// Конфигурация для добавления crossorigin в bundle.js без eject
-
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
