@@ -24,13 +24,15 @@ export const getChats = async () => {
   return apiRequest('/messages/chats')
 }
 
-// История переписки по chat_id
 export const getChatHistory = async (chatId, skip = 0, limit = 50) => {
-  const params = new URLSearchParams({ skip: String(skip), limit: String(limit) }).toString()
+  const params = new URLSearchParams(
+    { skip: String(skip),
+      limit: String(limit)
+    }).toString()
+
   return apiRequest(`/messages/history/chat/${chatId}?${params}`)
 }
 
-// Создание/получение chat_id для чата с пользователем
 export const getChatId = async (companionId) => {
   return apiRequest('/ws/get_chat_id', {
     method: 'POST',

@@ -10,14 +10,12 @@ const ChatList = ({ chats, selectedChat, onSelectChat = () => {} }) => {
   const isChatActive = (chat) => {
     if (!selectedChat) return false
     
-    // Проверяем по companion_id
     if (selectedChat.companion_id && chat.companion_id) {
       if (selectedChat.companion_id.toString() === chat.companion_id.toString()) {
         return true
       }
     }
     
-    // Проверяем по companion_login
     if (selectedChat.companion_login && chat.companion_login) {
       if (selectedChat.companion_login === chat.companion_login) {
         return true
@@ -26,7 +24,7 @@ const ChatList = ({ chats, selectedChat, onSelectChat = () => {} }) => {
     
     return false
   }
-
+  
   return (
     <div className="chat-list">
       {chats.map((chat) => (

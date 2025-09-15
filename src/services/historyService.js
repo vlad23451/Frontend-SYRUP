@@ -96,3 +96,10 @@ export const deleteHistoryDislike = async (historyId) => {
     json: false
   })
 }
+
+export const getHistoriesByIds = async (ids) => {
+  return apiRequest('/history/by-ids', {
+    method: 'POST',
+    body: JSON.stringify({ ids })
+  })
+}

@@ -1,18 +1,14 @@
-import { makeAutoObservable } from 'mobx'
+import { makeAutoObservable, runInAction } from 'mobx'
 import MessagesStore from './MessagesStore'
+import NotificationService from '../services/notificationService'
+import { getUserId, getUserLogin } from '../utils/localStorageUtils'
 
-/**
- * WebSocketStore
- * - Управляет WebSocket соединением и отправкой сообщений
- * - Хранит состояние соединения и предоставляет методы для отправки
- * - Обрабатывает ответы от сервера, включая chat_id
- */
 class WebSocketStore {
   connection = null
   isConnected = false
   error = null
   currentChatId = null
-  pendingChatRequests = new Map() // companionId -> { resolve, reject, timeout }
+  pendingChatRequests = new Map()
 
   constructor() {
     makeAutoObservable(this)
@@ -58,7 +54,7 @@ class WebSocketStore {
       }
     } else if (data.type === 'message' || data.message_type === 'text') {
       
-      const currentUserId = localStorage.getItem('user_id')
+      const currentUserId = getUserId()
       const fromMe = data.sender_id && currentUserId && parseInt(data.sender_id) === parseInt(currentUserId)
       
       const messageObj = {
@@ -67,11 +63,11 @@ class WebSocketStore {
         sender_id: data.sender_id,
         chat_id: data.chat_id,
         timestamp: data.timestamp,
-        time: data.timestamp, // для обратной совместимости
         from_me: fromMe,
         is_read: fromMe ? undefined : false,
         message_type: data.message_type || 'text',
-        metadata: data.metadata || {}
+        metadata: data.metadata || {},
+        edited_at: data.edited_at || null
       }
       
       import('./ChatStore').then(({ default: ChatStore }) => {
@@ -79,13 +75,120 @@ class WebSocketStore {
         const selectedChatId = selectedChat?.chat_id
         
         if (selectedChatId && parseInt(selectedChatId) === parseInt(data.chat_id)) {
-          MessagesStore.addMessage(messageObj)
+          // Проверяем, не является ли это отредактированным сообщением
+          const existingMessage = MessagesStore.items.find(m => m.id === data.id)
+          
+          console.log('WebSocket message received:', {
+            id: data.id,
+            text: data.text,
+            edited_at: data.edited_at,
+            messageType: data.type || data.message_type,
+            existingMessage: !!existingMessage
+          })
+          
+          if (existingMessage && (data.edited_at || data.type === 'message_edited')) {
+            // Обновляем существующее сообщение с данными с сервера
+            runInAction(() => {
+              MessagesStore.items = MessagesStore.items.map(m => 
+                m.id === data.id ? { 
+                  ...m, 
+                  text: data.text, 
+                  edited_at: data.edited_at || new Date().toISOString()
+                } : m
+              )
+            })
+          } else {
+            // Добавляем новое сообщение
+            console.log('Adding new message:', data.id, 'edited_at:', data.edited_at)
+            MessagesStore.addMessage(messageObj)
+          }
         } else {}
         ChatStore.updateLastMessage(data.chat_id, messageObj)
+        
+        if (!fromMe) {
+          this.showNotificationForMessage(messageObj, data, ChatStore)
+        }
       }).catch(err => {
         console.error('Ошибка обновления чата:', err)
       })
+    } else if (data.type === 'message_deleted') {
+      // Обработка удаления сообщения
+      try {
+        MessagesStore.removeMessageById(data.id)
+        console.log('Сообщение удалено:', data.id)
+      } catch (error) {
+        console.error('Ошибка удаления сообщения:', error)
+      }
+    } else if (data.type === 'message_edited') {
+      // Обработка редактирования сообщения
+      try {
+        // Обновляем сообщение с edited_at из сервера
+        runInAction(() => {
+          MessagesStore.items = MessagesStore.items.map(m => 
+            m.id === data.id ? { 
+              ...m, 
+              text: data.text, 
+              edited_at: data.edited_at || new Date().toISOString()
+            } : m
+          )
+        })
+      } catch (error) {
+        console.error('Ошибка редактирования сообщения:', error)
+      }
     } else {
+    }
+  }
+
+  showNotificationForMessage(messageObj, rawData, ChatStore) {
+    try {
+      const senderInfo = this.getSenderInfo(ChatStore, rawData)
+
+      NotificationService.showMessageNotification(messageObj, senderInfo)
+    } catch (error) {
+      console.error('Ошибка показа уведомления:', error)
+    }
+  }
+
+  getSenderInfo(ChatStore, rawMessageData = {}) {
+    try {
+      if (rawMessageData.sender_login) {
+        return {
+          login: rawMessageData.sender_login,
+          avatar: rawMessageData.sender_avatar,
+          sender_id: rawMessageData.sender_id
+        }
+      }
+
+      const chat = ChatStore?.items?.find(item => 
+        item.chat_id && parseInt(item.chat_id) === parseInt(rawMessageData.chat_id)
+      )
+      
+      if (chat) {
+        return {
+          title: chat.title,
+          login: chat.companion_login,
+          avatar: chat.companion_avatar
+        }
+      }
+      
+      const chatBySender = ChatStore?.items?.find(item => 
+        item.companion_id && parseInt(item.companion_id) === parseInt(rawMessageData.sender_id)
+      )
+      
+      if (chatBySender) {
+        return {
+          title: chatBySender.title,
+          login: chatBySender.companion_login,
+          avatar: chatBySender.companion_avatar
+        }
+      }
+      
+    } catch (error) {
+      console.error('Ошибка получения информации об отправителе:', error)
+      return {
+        login: 'unknown',
+        avatar: 'unknown'
+      }
     }
   }
 
@@ -149,9 +252,12 @@ class WebSocketStore {
     }
 
     try {
+      const senderLogin = getUserLogin()
+
       const message = {
         type: "send_message",
         sender_id: parseInt(senderId),
+        sender_login: senderLogin,
         chat_id: parseInt(chatId),
         text: String(text)
       }
@@ -206,6 +312,49 @@ class WebSocketStore {
       return false
     }
   }
+
+  sendDeleteMessage(messageId) {
+    if (!this.connection || !this.isConnected) {
+      console.error('WebSocket не подключен')
+      return false
+    }
+
+    try {
+      const payload = {
+        type: 'delete_message',
+        message_id: parseInt(messageId)
+      }
+      this.connection.send(JSON.stringify(payload))
+      return true
+    } catch (error) {
+      console.error('Ошибка отправки delete_message:', error)
+      this.setError(error.message)
+      return false
+    }
+  }
+
+  sendEditMessage(messageId, newText) {
+    if (!this.connection || !this.isConnected) {
+      console.error('WebSocket не подключен')
+      return false
+    }
+
+    try {
+      const payload = {
+        type: 'edit_message',
+        message_id: parseInt(messageId),
+        text: String(newText)
+      }
+      this.connection.send(JSON.stringify(payload))
+      return true
+    } catch (error) {
+      console.error('Ошибка отправки edit_message:', error)
+      this.setError(error.message)
+      return false
+    }
+  }
 }
 
-export default new WebSocketStore()
+const webSocketStore = new WebSocketStore()
+
+export default webSocketStore

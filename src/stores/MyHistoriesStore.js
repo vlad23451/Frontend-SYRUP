@@ -1,12 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx'
 import { getMyHistories } from '../services/historyService'
 
-/**
- * MyHistoriesStore
- * - Список историй текущего пользователя
- * - Экшены для мгновенных локальных обновлений: removeById, updateItem
- * - Загрузка из API: fetchMyHistories
- */
 class MyHistoriesStore {
   items = []
   loading = false
@@ -34,7 +28,9 @@ class MyHistoriesStore {
 
   updateItem(updatedHistory) {
     if (!updatedHistory || !updatedHistory.id) return
-    this.items = this.items.map((h) => (h.id === updatedHistory.id ? { ...h, ...updatedHistory } : h))
+    this.items = this.items.map(
+      (h) => (h.id === updatedHistory.id ? { ...h, ...updatedHistory } : h)
+    )
   }
 
   async fetchMyHistories() {

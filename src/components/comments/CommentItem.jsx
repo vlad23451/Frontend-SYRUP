@@ -31,11 +31,9 @@ const CommentItem = ({
       <div className="comment-avatar">
         <div style={{cursor:'pointer', width:'100%', height:'100%'}} onClick={handleOpenProfile} title="Открыть профиль">
           <Avatar
-            avatarKey={c.user_info?.avatar_key}
-            userId={c.user_info?.id}
-            isMyAvatar={false}
+            avatarUrl={c.user_info.avatar_url}
             size={40}
-            alt={c.user_info?.login}
+            alt={c.user_info.login}
             className="comment-avatar-img"
           />
         </div>
@@ -43,7 +41,7 @@ const CommentItem = ({
       <div className="comment-content">
         <div className="comment-header">
           <span className="comment-author" style={{cursor:'pointer'}} onClick={handleOpenProfile} title="Открыть профиль">
-            {c.user_info?.login || 'Пользователь'}
+            {c.user_info.login}
           </span>
           <span className="comment-time">{formatHistoryDateTime(c.created_at, userTimezone)}</span>
         </div>

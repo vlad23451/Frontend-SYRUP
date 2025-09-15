@@ -1,10 +1,3 @@
-/**
- * @fileoverview Форма редактирования истории
- * 
- * Не содержит бизнес-логики — все обработчики (`handleChange`, `handleSubmit`, `onCancel`)
- * приходят извне. Кнопки действий интегрированы в разметку модалки
- * и занимают всю ширину ряда с выравниванием space-between.
- */
 import React from 'react'
 
 const EditHistoryForm = ({ formData, handleChange, handleSubmit, onCancel }) => {

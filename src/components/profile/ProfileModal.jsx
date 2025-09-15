@@ -38,15 +38,16 @@ const ProfileModal = ({ open, user, loading, error, onClose, onGoToChat, onGoToP
         <ModalHeader title="Профиль" onClose={onClose} />
         <div ref={handleRef} className="modal-drag-handle" aria-hidden />
         <div className="modal-drag-visible" aria-hidden />
+
         {loading && <div className="modal-loading">Загрузка профиля...</div>}
+
         {error && <div className="modal-error">Ошибка: {error}</div>}
+        
         {user && (
           <>
             <div className="profile-modal-header" style={{justifyContent: 'center'}}>
               <Avatar
-                avatarKey={user.user_info?.avatar_key || user.avatar_key}
-                userId={user.user_info?.id || user.id}
-                isMyAvatar={false}
+                avatarUrl={user.user_info.avatar_url}
                 size={160}
                 alt={user.login}
                 className="profile-modal-avatar"
@@ -58,7 +59,7 @@ const ProfileModal = ({ open, user, loading, error, onClose, onGoToChat, onGoToP
             </div>
             <div className="profile-modal-title" style={{textAlign: 'center'}}>
               <h3>{user.login}</h3>
-              <span className="profile-modal-sub">{user.name || ''}</span>
+              {/*<span className="profile-modal-sub">{user.name || ''}</span>*/}
             </div>
             <div className="profile-modal-body">
               <UserProfileInfo user={user} />
@@ -66,10 +67,12 @@ const ProfileModal = ({ open, user, loading, error, onClose, onGoToChat, onGoToP
             <div className="custom-modal-actions">
               <button className="custom-modal-btn" onClick={onGoToProfile}>Перейти в профиль</button>
               <button className="custom-modal-btn confirm" onClick={onGoToChat}>Перейти в чат</button>
-              <SubscribeButton
-                FollowStatus={user.user_info?.follow_status}
-                targetId={user.user_info?.id || user.id}
-              />
+              {user.user_info.follow_status !== 'me' && (
+                <SubscribeButton
+                  FollowStatus={user.user_info.follow_status}
+                  targetId={user.user_info.id}
+                />
+              )}
             </div>
           </>
         )}

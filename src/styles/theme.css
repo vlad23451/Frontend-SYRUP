@@ -9,9 +9,11 @@
   --color-text-secondary: #606a7b;     /* softened */
   --color-primary: #4f8df7;            /* premium blue */
   --color-border: #d7deea;             /* subtle borders */
-  --color-btn-bg: #4f8df7;
+  
+  /* Button colors - separate from theme accent */
+  --color-btn-bg: #374151;             /* neutral gray for buttons */
   --color-btn-text: #ffffff;
-  --color-btn-bg-hover: #3a7ceb;
+  --color-btn-bg-hover: #4b5563;       /* darker gray on hover */
   /* Interactive */
   --interactive-hover-strength: 22%;
   --interactive-hover-bg: color-mix(in srgb, var(--color-primary) var(--interactive-hover-strength), transparent);
@@ -34,9 +36,11 @@
   --color-text-secondary: #9ca3af;
   --color-primary: #60a5fa;
   --color-border: #1f2937;
-  --color-btn-bg: #3b82f6;
+  
+  /* Button colors - separate from theme accent */
+  --color-btn-bg: #374151;             /* neutral gray for buttons */
   --color-btn-text: #ffffff;
-  --color-btn-bg-hover: #2563eb;
+  --color-btn-bg-hover: #4b5563;       /* darker gray on hover */
   /* Fallback */
   --interactive-hover-bg: rgba(255, 255, 255, 0.08);
   /* Dynamic hover color based on current accent color even in dark theme */
@@ -62,7 +66,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-[data-theme] button:not(.comment-action-btn), [data-theme] .btn {
+[data-theme] button:not(.comment-action-btn):not(.media-player-btn):not(.media-player-nav), [data-theme] .btn {
   background: var(--color-btn-bg);
   color: var(--color-btn-text);
   border: none;
@@ -75,7 +79,7 @@ body {
   transition: background var(--transition), color var(--transition), box-shadow var(--transition), transform var(--transition);
   box-shadow: var(--shadow-sm);
 }
-[data-theme] button:not(.comment-action-btn):hover, [data-theme] .btn:hover {
+[data-theme] button:not(.comment-action-btn):not(.media-player-btn):not(.media-player-nav):hover, [data-theme] .btn:hover {
   background: var(--color-btn-bg-hover);
   box-shadow: var(--shadow-md);
 }

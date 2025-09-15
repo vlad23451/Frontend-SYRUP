@@ -1,6 +1,7 @@
 import './PeopleList.css'
 import React, { useEffect, useState } from 'react'
 import { searchUsers, getFriends, getFollowers } from '../../services/userService'
+import { getUserId } from '../../utils/localStorageUtils'
 import SubscribeButton from '../profile/SubscribeButton'
 import { useProfileModal } from '../../contexts/ProfileModalContext'
 import Avatar from '../ui/Avatar'
@@ -19,10 +20,10 @@ const PeopleList = ({ tab, search, userId }) => {
       try {
         let data
         if (tab === 'friends') {
-          const id = userId || localStorage.getItem('user_id')
+          const id = userId || getUserId()
           data = await getFriends(id)
         } else if (tab === 'followers') {
-          const id = userId || localStorage.getItem('user_id')
+          const id = userId || getUserId()
           data = await getFollowers(id)
         } else {
           data = await searchUsers(search)
@@ -54,9 +55,7 @@ const PeopleList = ({ tab, search, userId }) => {
         {filtered.map(user => (
           <div key={user.id} className="people-list-item" onClick={() => handleOpenProfile(user)} style={{cursor: 'pointer'}}>
             <Avatar
-              avatarKey={user.avatar_key}
-              userId={user.id}
-              isMyAvatar={false}
+              avatarUrl={user.avatar_url}
               size={56}
               alt={user.login}
               className="people-list-avatar"

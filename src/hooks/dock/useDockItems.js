@@ -9,8 +9,16 @@
  */
 import { useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+
 import { useStore } from '../../stores/StoreContext'
-import { IconNews, IconUsers, IconChat, IconUser, IconLogin, IconRegister, IconBack, IconFollowing } from '../../components/ui/icons/DockIcons'
+import { IconNews,
+         IconUsers,
+         IconChat,
+         IconUser,
+         IconLogin,
+         IconRegister,
+         IconBack,
+         IconFollowing } from '../../components/ui/icons/DockIcons'
 
 export const useDockItems = ({ isPeople, searchValue }) => {
   const { auth } = useStore()
@@ -23,9 +31,17 @@ export const useDockItems = ({ isPeople, searchValue }) => {
     if (auth.isAuthenticated) {
       if (isPeople) {
         return [
-          { to: '/', label: 'Назад', Icon: IconBack },
-          { to: `/people?tab=all&q=${encodeURIComponent(searchValue)}`, label: 'Все', Icon: IconUsers },
-          { to: `/people?tab=friends&q=${encodeURIComponent(searchValue)}`, label: 'Друзья', Icon: IconUsers },
+          { to: '/',
+            label: 'Назад',
+            Icon: IconBack },
+
+          { to: `/people?tab=all&q=${encodeURIComponent(searchValue)}`,
+            label: 'Все',
+            Icon: IconUsers },
+
+          { to: `/people?tab=friends&q=${encodeURIComponent(searchValue)}`,
+            label: 'Друзья',
+            Icon: IconUsers },
         ]
       }
       const base = [
@@ -44,7 +60,9 @@ export const useDockItems = ({ isPeople, searchValue }) => {
     ]
   }, [auth.isAuthenticated, isPeople, searchValue, location.pathname])
 
-  const isActivePath = (to) => (to === '/' ? location.pathname === '/' : location.pathname.startsWith(to))
+  const isActivePath = (to) => (to === '/'
+                                ? location.pathname === '/'
+                                : location.pathname.startsWith(to))
 
   const handleItemClick = (e, to, label) => {
     if (isPeople && label === 'Назад') {
@@ -52,6 +70,7 @@ export const useDockItems = ({ isPeople, searchValue }) => {
       navigate('/')
       return
     }
+
     if (isPeople && (label === 'Все' || label === 'Друзья')) {
       e.preventDefault()
       const tab = label === 'Все' ? 'all' : 'friends'
@@ -60,5 +79,9 @@ export const useDockItems = ({ isPeople, searchValue }) => {
     }
   }
 
-  return { items, isActivePath, handleItemClick, isAuthenticated: auth.isAuthenticated, isFollowingPage }
+  return { items,
+           isActivePath,
+           handleItemClick,
+           isAuthenticated: auth.isAuthenticated,
+           isFollowingPage }
 }

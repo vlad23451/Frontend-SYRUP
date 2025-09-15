@@ -40,6 +40,14 @@
   font-size: 1.1em;
 }
 
+/* Общие стили для аватарок - предотвращение выделения */
+.avatar-img, .avatar-default, .avatar-loading {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
 .error {
   color: #dc3545;
   background: rgba(220, 53, 69, 0.1);

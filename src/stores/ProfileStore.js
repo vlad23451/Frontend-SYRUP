@@ -1,11 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx'
 import { getCurrentUser } from '../services/userService'
 
-/**
- * ProfileStore
- * - Профиль текущего пользователя (страница "Мой профиль")
- * - Загружает данные через userService.getCurrentUser
- */
 class ProfileStore {
   user = null
   loading = false

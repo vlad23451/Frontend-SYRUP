@@ -15,7 +15,9 @@ export const useDockSearch = () => {
   const timerRef = useRef(null)
   const updateSearch = (value) => {
     setSearchValue(value)
+
     if (timerRef.current) clearTimeout(timerRef.current)
+      
     timerRef.current = setTimeout(() => {
       const url = `/people?tab=${currentTab}&q=${encodeURIComponent(value)}`
       navigate(url, { replace: true })

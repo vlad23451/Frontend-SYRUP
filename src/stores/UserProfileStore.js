@@ -2,11 +2,6 @@ import { makeAutoObservable, runInAction } from 'mobx'
 import { getUserById } from '../services/userService'
 import { getUserHistories } from '../services/historyService'
 
-/**
- * UserProfileStore
- * - Профиль произвольного пользователя + его истории
- * - Отдельные состояния загрузки для пользователя и его историй
- */
 class UserProfileStore {
   user = null
   histories = []
@@ -46,6 +41,7 @@ class UserProfileStore {
   async fetchUser(userId) {
     this.setLoading(true)
     this.setError(null)
+
     try {
       const data = await getUserById(userId)
       runInAction(() => {
@@ -63,6 +59,7 @@ class UserProfileStore {
   async fetchUserHistories(userId) {
     this.setHistoriesLoading(true)
     this.setHistoriesError(null)
+    
     try {
       const items = await getUserHistories(userId)
       runInAction(() => {

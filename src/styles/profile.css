@@ -25,6 +25,10 @@
   flex-shrink: 0;
   position: relative;
   align-content: center;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .profile-avatar img, .profile-avatar-img {
@@ -34,6 +38,10 @@
   object-fit: cover;
   border: 3px solid var(--color-border);
   transition: border-color var(--transition);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .profile-avatar:hover img {
@@ -50,12 +58,7 @@
   font-size: 1.8em;
   font-weight: 700;
   margin: 0 0 8px 0;
-}
-
-.profile-email {
-  color: var(--color-text-secondary);
-  font-size: 1em;
-  margin: 0 0 12px 0;
+  user-select: none;
 }
 
 .profile-description {
@@ -63,12 +66,20 @@
   font-size: 1em;
   line-height: 1.5;
   margin: 0 0 16px 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .profile-stats {
   display: flex;
   justify-content: center;
   gap: 32px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .stat-item {
@@ -82,12 +93,20 @@
   color: var(--color-primary);
   font-size: 1.4em;
   font-weight: 700;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .stat-label {
   color: var(--color-text-secondary);
   font-size: 0.85em;
   font-weight: 500;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .profile-content {
@@ -120,6 +139,17 @@
   align-items: center;
 }
 
+.user-histories-header h3 {
+  font-size: 1.8em;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
 .user-histories .create-history-section { 
   margin: 0 auto 12px; 
   width: 100%;
@@ -138,6 +168,10 @@
   font-size: 1.3em;
   font-weight: 600;
   margin: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .empty-state {

@@ -24,7 +24,11 @@ import React from 'react'
 import HistoryCard from './HistoryCard'
 import HistoryListEmpty from './HistoryListEmpty'
 
-const HistoryList = ({ histories, onDeleteHistory, onUpdateHistory }) => {
+const HistoryList = ({ histories, onDeleteHistory, onUpdateHistory, isLoading = false }) => {
+  if (isLoading) {
+    return null
+  }
+  
   if (histories.length === 0) {
     return <HistoryListEmpty />
   }

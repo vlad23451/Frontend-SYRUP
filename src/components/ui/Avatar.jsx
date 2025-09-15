@@ -1,19 +1,16 @@
 /**
  * @fileoverview Универсальный компонент аватара
  * 
- * Компонент для отображения аватаров пользователей с автоматической загрузкой URL.
- * Поддерживает разные размеры и типы аватаров (свой/чужой).
+ * Компонент для отображения аватаров пользователей.
+ * Поддерживает разные размеры и типы аватаров.
  * 
- * @param {string} avatarKey - ключ аватара в S3
- * @param {string|number} userId - ID пользователя (для чужих аватаров)
- * @param {boolean} isMyAvatar - флаг, является ли это моим аватаром
+ * @param {string} avatarUrl - прямая ссылка на аватар
  * @param {number} size - размер аватара в пикселях
  * @param {string} alt - альтернативный текст
  * @param {string} className - CSS класс
  */
 
 import React from 'react'
-import { useMyAvatarUrl, useUserAvatarUrl } from '../../hooks/useAvatarUrl'
 
 const defaultAvatarSvg = (size) => (
   <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -23,25 +20,13 @@ const defaultAvatarSvg = (size) => (
 )
 
 const Avatar = ({ 
-  avatarKey, 
-  userId = null, 
-  isMyAvatar = false, 
+  avatarUrl = null,
   size = 40, 
   alt = "avatar", 
   className = "",
   style = {}
 }) => {
-  // Используем соответствующий хук для получения URL аватара
-  const { avatarUrl: myAvatarUrl, loading: myAvatarLoading } = useMyAvatarUrl(
-    isMyAvatar ? avatarKey : null
-  )
-  const { avatarUrl: userAvatarUrl, loading: userAvatarLoading } = useUserAvatarUrl(
-    !isMyAvatar ? avatarKey : null,
-    !isMyAvatar ? userId : null
-  )
-
-  const avatarSrc = isMyAvatar ? myAvatarUrl : userAvatarUrl
-  const loading = isMyAvatar ? myAvatarLoading : userAvatarLoading
+  const avatarSrc = avatarUrl
 
   const containerStyle = {
     width: size,
@@ -55,18 +40,7 @@ const Avatar = ({
     ...style
   }
 
-  if (loading) {
-    return (
-      <div 
-        className={`avatar-loading ${className}`}
-        style={containerStyle}
-      >
-        ⏳
-      </div>
-    )
-  }
-
-  if (avatarSrc) {
+  if (avatarSrc && avatarSrc.trim()) {
     return (
       <img 
         src={avatarSrc} 

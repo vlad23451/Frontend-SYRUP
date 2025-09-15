@@ -19,10 +19,9 @@ const ChatHeader = ({ selectedChat }) => {
   return (
     <div className="chat-header">
       <div className="chat-user-info">
+        
         <Avatar
-          avatarKey={selectedChat.companion_avatar_key}
-          userId={selectedChat.companion_id}
-          isMyAvatar={false}
+          avatarUrl={selectedChat.companion_avatar_url}
           size={40}
           alt="Аватар"
           className="chat-user-avatar"

@@ -32,7 +32,7 @@ module.exports = {
       webpackConfig.output = {
         ...webpackConfig.output,
         crossOriginLoading: 'anonymous',
-        publicPath: env === 'development' ? '/' : './',
+        publicPath: '/', // Всегда используем корневой путь для SPA
       };
 
       return webpackConfig;
@@ -46,6 +46,7 @@ module.exports = {
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
     allowedHosts: 'all', // Для работы с LocalTunnel
+    historyApiFallback: true, // Поддержка SPA роутинга
     client: {
       overlay: false, // Отключаем overlay для избежания ошибок на мобильных
       logging: 'warn', // Уменьшаем количество логов

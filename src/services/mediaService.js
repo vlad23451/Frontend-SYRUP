@@ -11,13 +11,6 @@
 
 import { apiRequest } from '../utils/apiUtils'
 
-/**
- * Загрузка файла на сервер
- * @param {File} file - Файл для загрузки
- * @param {string} description - Описание файла (опционально)
- * @param {boolean} isPublic - Публичный ли файл (опционально)
- * @returns {Promise<{id: string, file_key: string, file_type: string, download_url: string}>}
- */
 export const uploadFile = async (file, description = '', isPublic = true) => {
   const formData = new FormData()
   formData.append('file', file)
@@ -30,12 +23,6 @@ export const uploadFile = async (file, description = '', isPublic = true) => {
   })
 }
 
-/**
- * Прикрепление загруженного файла к истории
- * @param {string} fileId - ID загруженного файла  
- * @param {string} historyId - ID истории
- * @returns {Promise<any>}
- */
 export const attachFileToHistory = async (fileId, historyId) => {
   return apiRequest('/media/attach', {
     method: 'POST',
@@ -46,30 +33,14 @@ export const attachFileToHistory = async (fileId, historyId) => {
   })
 }
 
-/**
- * Получение всех файлов прикрепленных к истории
- * @param {string} historyId - ID истории
- * @returns {Promise<Array<{id: string, file_key: string, file_type: string, download_url: string, description?: string}>>}
- */
 export const getHistoryFiles = async (historyId) => {
   return apiRequest(`/media/history/${historyId}/files`)
 }
 
-/**
- * Получение актуальной ссылки на файл (для обновления истекших presigned URL)
- * @param {string} fileId - ID файла
- * @returns {Promise<{id: string, file_key: string, file_type: string, download_url: string}>}
- */
 export const getFileById = async (fileId) => {
   return apiRequest(`/media/files/${fileId}`)
 }
 
-/**
- * Открепление файла от истории
- * @param {string} fileId - ID файла
- * @param {string} historyId - ID истории
- * @returns {Promise<any>}
- */
 export const detachFile = async (fileId, historyId) => {
   return apiRequest('/media/detach', {
     method: 'POST',
@@ -80,11 +51,6 @@ export const detachFile = async (fileId, historyId) => {
   })
 }
 
-/**
- * Полное удаление файла (из S3 и БД)
- * @param {string} fileId - ID файла
- * @returns {Promise<any>}
- */
 export const deleteFile = async (fileId) => {
   return apiRequest(`/media/files/${fileId}`, {
     method: 'DELETE',
@@ -92,11 +58,6 @@ export const deleteFile = async (fileId) => {
   })
 }
 
-/**
- * Определение типа медиа файла по MIME типу
- * @param {string} mimeType - MIME тип файла
- * @returns {'image'|'video'|'audio'|'document'|'other'}
- */
 export const getMediaType = (mimeType) => {
   if (mimeType.startsWith('image/')) return 'image'
   if (mimeType.startsWith('video/')) return 'video'
@@ -109,11 +70,6 @@ export const getMediaType = (mimeType) => {
   return 'other'
 }
 
-/**
- * Получение иконки для типа файла
- * @param {string} mediaType - Тип медиа ('image'|'video'|'audio'|'document'|'other')
- * @returns {string} - Эмодзи иконка
- */
 export const getFileIcon = (mediaType) => {
   switch (mediaType) {
     case 'image': return '🖼️'

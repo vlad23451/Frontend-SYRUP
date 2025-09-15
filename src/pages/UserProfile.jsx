@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { observer } from 'mobx-react-lite'
+
 import { useStore } from '../stores/StoreContext'
 import ProfileAvatar from '../components/profile/ProfileAvatar'
 import UserProfileInfo from '../components/profile/UserProfileInfo'
@@ -20,10 +21,15 @@ const UserProfile = observer(() => {
   }, [id, userProfile])
 
   if (userProfile.loading) {
-    return <div className="profile-page"><div className="profile-container">Загрузка...</div></div>
+    return <div className="profile-page">
+              <div className="profile-container">Загрузка...</div>
+           </div>
   }
+
   if (userProfile.error) {
-    return <div className="profile-page"><div className="profile-container">Ошибка: {userProfile.error}</div></div>
+    return <div className="profile-page">
+             <div className="profile-container">Ошибка: {userProfile.error}</div>
+           </div>
   }
 
   const user = userProfile.user
@@ -33,26 +39,32 @@ const UserProfile = observer(() => {
       <div className="profile-page">
         <div className="profile-container">
           <div className="profile-header">
+            
             <div style={{display:'flex', flexDirection:'column', alignItems:'center', width:'100%'}}>
               <ProfileAvatar user={user} isMe={false} />
             </div>
+            
             <UserProfileInfo user={user} />
+            
             <div className="profile-actions" style={{ display:'flex', gap: 12, justifyContent:'center', marginTop: 12 }}>
               <button className="custom-modal-btn" onClick={() => navigate('/messenger')}>
                 Перейти в чат
               </button>
-              {user?.user_info?.follow_status !== 'me' && (auth?.user?.id !== (user?.user_info?.id || user?.id)) && (
+
+              {user.user_info.follow_status !== 'me' && (auth?.user?.id !== (user?.user_info?.id || user?.id)) && (
                 <SubscribeButton
-                  FollowStatus={user?.user_info?.follow_status}
+                  FollowStatus={user.user_info.follow_status}
                   targetId={user?.user_info?.id || user?.id}
                 />
               )}
             </div>
+
           </div>
           <div className="profile-content">
             <div className="user-histories">
+
               <div className="user-histories-header">
-                <h3 className="text-primary">📰 Истории пользователя</h3>
+                <h3 className="text-primary">Истории пользователя</h3>
               </div>
               {userProfile.historiesLoading ? (
                 <div>Загрузка историй...</div>
@@ -70,9 +82,9 @@ const UserProfile = observer(() => {
                       key={h.id} 
                       history={h}
                       overrideAuthor={{
-                        id: user?.user_info?.id || user?.id,
-                        login: user?.user_info?.login || user?.login,
-                        avatar: user?.avatar_key || user?.avatar,
+                        id: user.user_info.id,
+                        login: user.user_info.login,
+                        avatar: user.avatar_key,
                       }}
                     />
                   ))}

@@ -38,8 +38,7 @@
           var base = baseMap[colorScheme] || baseMap.blue;
           var rgb = base.map(function(c){ return Math.round(c * saturation); });
           root.style.setProperty('--color-primary', 'rgb(' + rgb[0] + ', ' + rgb[1] + ', ' + rgb[2] + ')');
-          root.style.setProperty('--color-btn-bg', 'rgb(' + rgb[0] + ', ' + rgb[1] + ', ' + rgb[2] + ')');
-          root.style.setProperty('--color-btn-bg-hover', 'rgba(' + rgb[0] + ', ' + rgb[1] + ', ' + rgb[2] + ', 0.9)');
+          // Button colors are now separate from theme accent - don't override them
 
           // Custom theme overrides
           var rawCustom = ls.getItem('custom-theme');

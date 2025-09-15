@@ -32,6 +32,7 @@
 
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+
 import { login, register } from '../services/authService'
 import { useStore } from '../stores/StoreContext'
 
@@ -42,7 +43,7 @@ export const useAuthForm = (isRegister) => {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const { auth, profile } = useStore()
+  const { auth } = useStore()
 
   const handleSubmit = async (e, extra = {}) => {
     e.preventDefault()
@@ -51,12 +52,16 @@ export const useAuthForm = (isRegister) => {
 
     try {
       let response
+
       if (isRegister) {
         response = await register(loginInput, password, extra.about)
         
-        if (response?.user) {
+        if (response.user) {
           auth.setUser({ ...response.user })
-          try { localStorage.setItem('user_id', String(response?.user_id)) } catch {}
+          try { 
+            const userId = response.user_id || response.user.id || response.user.user_id
+            if (userId) localStorage.setItem('user_id', String(userId))
+          } catch {}
         } else {
           auth.setUser(null)
           try { localStorage.removeItem('user_id') } catch {}
@@ -64,20 +69,22 @@ export const useAuthForm = (isRegister) => {
       } else {
         response = await login(loginInput, password)
         
-        if (response?.user) {
+        if (response.user) {
           auth.setUser({ ...response.user })
-          try { localStorage.setItem('user_id', String(response?.user_id)) } catch {}
+          try { 
+            const userId = response.user_id || response.user.id || response.user.user_id
+            if (userId) localStorage.setItem('user_id', String(userId))
+          } catch {}
         } else {
           auth.setUser(null)
           try { localStorage.removeItem('user_id') } catch {}
         }
       }
       
-      // Перенаправляем на исходную страницу или на главную
       const from = location.state?.from?.pathname || '/'
       navigate(from, { replace: true })
-    } catch (err) {
-      setError(err.message)
+    } catch (error) {
+      setError(error.message)
     } finally {
       setLoading(false)
     }

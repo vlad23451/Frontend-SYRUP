@@ -11,12 +11,6 @@ import {
   deleteCommentDislike,
 } from '../services/commentService'
 
-/**
- * useCommentsController
- * - Инкапсулирует состояние и бизнес-логику модалки комментариев
- * - CRUD комментариев, лайки/дизлайки, optimistic UI и автоскролл
- * - Поддерживает колбэк `onCommentCountUpdate` для синхронизации счетчика в карточке
- */
 export const useCommentsController = ({ open, history, onCommentCountUpdate }) => {
   const { auth } = useStore()
 
@@ -31,7 +25,6 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
 
   const endRef = useRef(null)
 
-  // Load comments when modal opens
   useEffect(() => {
     if (!open || !history?.id) return
 
@@ -40,9 +33,11 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
       setError(null)
       try {
         const commentsData = await getComments(history.id)
+        
         const commentsWithReactions = (commentsData || []).map((comment) => {
-          const currentUserLiked = comment.liked_users?.some((user) => user.follow_status === 'me') || false
-          const currentUserDisliked = comment.disliked_users?.some((user) => user.follow_status === 'me') || false
+          const currentUserLiked = comment.liked_users.some((user) => user.follow_status === 'me') || false
+          const currentUserDisliked = comment.disliked_users.some((user) => user.follow_status === 'me') || false
+          
           return {
             ...comment,
             isLikeActive: currentUserLiked,
@@ -50,16 +45,16 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
             likeCount: comment.likes || 0,
             dislikeCount: comment.dislikes || 0,
             likeId: currentUserLiked
-              ? comment.liked_users?.find((user) => user.follow_status === 'me')?.like_id || null
+              ? comment.liked_users.find((user) => user.follow_status === 'me')?.like_id || null
               : null,
             dislikeId: currentUserDisliked
-              ? comment.disliked_users?.find((user) => user.follow_status === 'me')?.dislike_id || null
+              ? comment.disliked_users.find((user) => user.follow_status === 'me')?.dislike_id || null
               : null,
           }
         })
         setComments(commentsWithReactions)
-      } catch (err) {
-        console.error('Ошибка загрузки комментариев:', err)
+      } catch (error) {
+        console.error('Ошибка загрузки комментариев:', error)
         setError('Не удалось загрузить комментарии')
         setComments([])
       } finally {
@@ -70,7 +65,6 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
     fetchComments()
   }, [open, history?.id])
 
-  // Autoscroll to the last comment
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [comments])
@@ -274,5 +268,3 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
       c?.user_info?.id === (auth?.user?.id || auth?.user?.user_info?.id),
   }
 }
-
-

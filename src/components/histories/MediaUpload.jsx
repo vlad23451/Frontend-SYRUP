@@ -106,27 +106,53 @@ const MediaUpload = ({ attachedFiles, onFilesChange, loading: formLoading, error
             disabled={formLoading}
             title="Прикрепить"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M21.44 11.05L12 20.49a6 6 0 1 1-8.49-8.49l9.19-9.19a4 4 0 1 1 5.66 5.66l-9.19 9.19a2 2 0 1 1-2.83-2.83l8.49-8.49"/>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+              <circle cx="12" cy="13" r="3"/>
             </svg>
           </button>
           
           {attachOpen && (
             <div className="attach-menu" role="menu">
               <button type="button" className="attach-item" onClick={() => openPicker(photoVideoInputRef)} role="menuitem">
-                <span className="attach-ico">📷</span>
+                <span className="attach-ico">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                    <circle cx="12" cy="13" r="3"/>
+                  </svg>
+                </span>
                 Фото/Видео
               </button>
               <button type="button" className="attach-item" onClick={() => openPicker(audioInputRef)} role="menuitem">
-                <span className="attach-ico">🎵</span>
+                <span className="attach-ico">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18V5l12-2v13"/>
+                    <circle cx="6" cy="18" r="3"/>
+                    <circle cx="18" cy="16" r="3"/>
+                  </svg>
+                </span>
                 Аудио
               </button>
               <button type="button" className="attach-item" onClick={() => openPicker(docsInputRef)} role="menuitem">
-                <span className="attach-ico">📄</span>
+                <span className="attach-ico">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10,9 9,9 8,9"/>
+                  </svg>
+                </span>
                 Документы
               </button>
               <button type="button" className="attach-item" onClick={() => openPicker(otherInputRef)} role="menuitem">
-                <span className="attach-ico">📦</span>
+                <span className="attach-ico">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
+                    <line x1="12" y1="22.08" x2="12" y2="12"/>
+                  </svg>
+                </span>
                 Другое
               </button>
             </div>
@@ -208,7 +234,11 @@ const MediaUpload = ({ attachedFiles, onFilesChange, loading: formLoading, error
           {Array.from(uploadingFiles).map((fileName) => (
             <div key={`uploading-${fileName}`} className="media-upload-item uploading">
               <div className="media-upload-icon">
-                ⏳
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  <path d="M3.27 6.96L12 12.01l8.73-5.05"/>
+                  <line x1="12" y1="22.08" x2="12" y2="12"/>
+                </svg>
               </div>
               <div className="media-upload-info">
                 <span className="media-upload-name">{fileName}</span>

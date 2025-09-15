@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react'
 import { uploadAvatar } from '../../services/fileService'
 import { useStore } from '../../stores/StoreContext'
-import { useMyAvatarUrl, useUserAvatarUrl } from '../../hooks/useAvatarUrl'
+import { saveUserToStorage } from '../../utils/localStorageUtils'
+import AvatarEditButton from '../ui/AvatarEditButton'
 
 const defaultAvatar = (
   <svg width="120" height="120" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -16,17 +17,9 @@ const ProfileAvatar = ({ user, isMe, onAvatarUpdated }) => {
   const [error, setError] = useState('')
   const { auth } = useStore()
 
-  // Используем соответствующий хук для получения URL аватара
-  const { avatarUrl: myAvatarUrl, loading: myAvatarLoading } = useMyAvatarUrl(
-    isMe ? user?.avatar_key : null
-  )
-  const { avatarUrl: userAvatarUrl, loading: userAvatarLoading } = useUserAvatarUrl(
-    !isMe ? user?.avatar_key : null,
-    !isMe ? user?.id : null
-  )
+  if (!user) return null
 
-  const avatarSrc = isMe ? myAvatarUrl : userAvatarUrl
-  const loading = isMe ? myAvatarLoading : userAvatarLoading
+  const avatarSrc = user.user_info?.avatar_url
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0]
@@ -38,12 +31,18 @@ const ProfileAvatar = ({ user, isMe, onAvatarUpdated }) => {
     try {
       const response = await uploadAvatar(file)
       
-      // Обновляем данные пользователя в сторе
-      if (response.avatar_key && auth.user) {
-        auth.setUser({
+      // Обновляем данные пользователя в сторе и localStorage
+      if (response.avatar_url && auth.user) {
+        const updatedUser = {
           ...auth.user,
-          avatar_key: response.avatar_key
-        })
+          user_info: {
+            ...auth.user.user_info,
+            avatar_url: response.avatar_url
+          }
+        }
+        
+        auth.setUser(updatedUser)
+        saveUserToStorage(updatedUser)
       }
 
       if (onAvatarUpdated) {
@@ -59,11 +58,7 @@ const ProfileAvatar = ({ user, isMe, onAvatarUpdated }) => {
   
   return (
     <div className="profile-avatar" style={{ position: 'relative' }}>
-      {loading ? (
-        <div style={{ width: 120, height: 120, borderRadius: '50%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          ⏳
-        </div>
-      ) : avatarSrc ? (
+      {avatarSrc ? (
         <img 
           src={avatarSrc} 
           alt="avatar" 
@@ -94,31 +89,11 @@ const ProfileAvatar = ({ user, isMe, onAvatarUpdated }) => {
             onChange={handleFileChange}
             disabled={uploading}
           />
-          <button
-            type="button"
-            className="profile-avatar-upload-btn"
+          <AvatarEditButton
             onClick={() => fileInputRef.current && fileInputRef.current.click()}
             disabled={uploading}
-            style={{ 
-              position: 'absolute', 
-              bottom: 0, 
-              right: 0,
-              backgroundColor: 'var(--color-primary)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '50%',
-              width: '24px',
-              height: '24px',
-              cursor: uploading ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '12px'
-            }}
-            title={uploading ? 'Загрузка...' : 'Изменить аватар'}
-          >
-            {uploading ? '⏳' : '✏️'}
-          </button>
+            uploading={uploading}
+          />
         </>
       )}
       {error && (

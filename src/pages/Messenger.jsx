@@ -27,37 +27,103 @@
  */
 
 import { useEffect } from 'react'
-import { useLocation, useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { observer } from 'mobx-react-lite'
+
 import { useStore } from '../stores/StoreContext'
 import MessengerPanel from '../components/messenger/MessengerPanel'
 import { getUserById } from '../services/userService'
 
 const Messenger = observer(() => {
   const { chat } = useStore()
-  const location = useLocation()
   const { userId } = useParams()
-  const navigate = useNavigate()
 
   useEffect(() => {
     chat.fetchChats()
   }, [chat])
 
-  // Lock global scroll while on messenger page
+  useEffect(() => {
+    const checkNotificationChat = () => {
+      const chatIdToOpen = sessionStorage.getItem('open_chat_id')
+      if (chatIdToOpen) {
+        sessionStorage.removeItem('open_chat_id')
+        
+        const chatToOpen = chat.items.find(item => 
+          item.chat_id && parseInt(item.chat_id) === parseInt(chatIdToOpen)
+        )
+        
+        if (chatToOpen) {
+          chat.selectChat(chatToOpen)
+        } else {
+          console.warn('Не найден чат с ID:', chatIdToOpen)
+        }
+      }
+    }
+
+    const handleNotificationChat = (event) => {
+      const { chatId, senderId, senderInfo } = event.detail
+      
+      if (chatId) {
+        const chatToOpen = chat.items.find(item => 
+          item.chat_id && parseInt(item.chat_id) === parseInt(chatId)
+        )
+        
+        if (chatToOpen) {
+          chat.selectChat(chatToOpen)
+          return
+        }
+      }
+      
+      if (senderId) {
+        const chatToOpen = chat.items.find(item => 
+          item.companion_id && parseInt(item.companion_id) === parseInt(senderId)
+        )
+        
+        if (chatToOpen) {
+          chat.selectChat(chatToOpen)
+          return
+        }
+      }
+      
+      if (senderInfo.login) {
+        const synthetic = {
+          companion_login: senderInfo.login,
+          companion_name: senderInfo.name,
+          companion_avatar: senderInfo.avatar,
+          companion_id: senderId,
+          last_message: '',
+          last_message_time: null,
+          is_temporary: true,
+        }
+
+        chat.setItems([synthetic, ...chat.items])
+        chat.selectChat(synthetic)
+      }
+    }
+
+    if (chat.items.length > 0) {
+      checkNotificationChat()
+    }
+
+    window.addEventListener('openChatFromNotification', handleNotificationChat)
+
+    return () => {
+      window.removeEventListener('openChatFromNotification', handleNotificationChat)
+    }
+  }, [chat, chat.items])
+
   useEffect(() => {
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = prev }
   }, [])
 
-  // Ensure chat from route /messenger/:userId
   useEffect(() => {
     let cancelled = false
     const syncFromRoute = async () => {
       const routeId = userId
       
       if (!routeId) {
-        // Если нет userId в URL, очищаем выбранный чат
         if (chat.selectedChat) {
           chat.selectChat(null)
         }
@@ -66,25 +132,20 @@ const Messenger = observer(() => {
       
       const items = Array.isArray(chat.items) ? chat.items : []
 
-      // Сначала ищем по companion_id (числовой ID)
       let found = items.find(c => c.companion_id?.toString() === routeId)
 
       if (!found) {
-        // Затем ищем по companion_login
         found = items.find(c => c.companion_login === routeId)
       }
 
       if (!found) {
-        // Если не нашли в существующих чатах, пробуем получить пользователя по API
         try {
           const user = await getUserById(routeId)
           const resolvedLogin = user?.user_info?.login || user?.login
           if (resolvedLogin) {
-            // Проверяем, есть ли уже чат с этим пользователем
             found = items.find(c => c.companion_login === resolvedLogin)
             
             if (!found) {
-              // Создаем синтетический чат
               const synthetic = {
                 companion_login: resolvedLogin,
                 companion_avatar_key: user?.avatar_key || user?.avatar,
@@ -100,9 +161,8 @@ const Messenger = observer(() => {
               return
             }
           }
-        } catch (e) {
-          console.error('Ошибка при получении пользователя:', e)
-          // Если не удалось получить пользователя, создаем чат с routeId как логином
+        } catch (error) {
+          console.error('Ошибка при получении пользователя:', error)
           const synthetic = {
             companion_login: routeId,
             companion_avatar_key: undefined,
@@ -124,7 +184,9 @@ const Messenger = observer(() => {
         }
       }
     }
+
     syncFromRoute()
+    
     return () => { cancelled = true }
   }, [userId, chat, chat.items, chat.selectedChat])
 

@@ -20,8 +20,23 @@
 .history-preview { padding: 8px 16px 4px; }
 .history-preview-author { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .history-preview-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-.history-preview-login { font-weight: 600; color: var(--color-text); }
-.history-preview-date { font-size: 0.8rem; color: var(--color-text-secondary); }
+.history-preview-login { 
+  font-weight: 600; 
+  color: var(--color-text);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.history-preview-date { 
+  font-size: 0.8rem; 
+  color: var(--color-text-secondary);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
 .history-preview-title { font-weight: 700; margin: 6px 0; color: var(--color-text); }
 .history-preview-desc { color: var(--color-text-secondary); margin-bottom: 8px; }
 .history-preview-image img { width: 100%; border-radius: 12px; border: 1px solid var(--color-border); aspect-ratio: 1 / 1; object-fit: cover; }
@@ -122,8 +137,23 @@
   margin-bottom: 4px;
 }
 
-.comment-author { font-weight: 600; font-size: 0.875rem; color: var(--color-text); }
-.comment-time { font-size: 0.75rem; color: var(--color-text-secondary); }
+.comment-author { 
+  font-weight: 600; 
+  font-size: 0.875rem; 
+  color: var(--color-text);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+.comment-time { 
+  font-size: 0.75rem; 
+  color: var(--color-text-secondary);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
 .comment-text { 
   font-size: 0.875rem; 
   line-height: 1.4; 
@@ -223,7 +253,14 @@
   border-color: var(--color-border);
 }
 .comment-action-btn:disabled:hover { border-color: var(--color-border); }
-.comment-action-counter { font-size: 12px; color: var(--color-text-secondary); }
+.comment-action-counter { 
+  font-size: 12px; 
+  color: var(--color-text-secondary);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
 
 /* own bubble style suggestion (if later needed) */
 .comment-item.own .comment-text {

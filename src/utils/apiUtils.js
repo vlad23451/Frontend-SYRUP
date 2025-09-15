@@ -12,8 +12,6 @@
  * - Поддержка cookies для аутентификации
  * - Парсинг JSON ответов
  * 
- * Конфигурация:
- * - BASE_URL: базовый URL API сервера (http://localhost:8000)
  * 
  * Особенности:
  * - GET запросы не требуют Content-Type заголовка
@@ -23,8 +21,6 @@
  * 
  * @author SYRUP CHAT Team
  * @version 1.0.0
- * 
- * 
  */
 
 import authStore from "../stores/AuthStore"
@@ -41,7 +37,7 @@ export const apiRequest = async (endpoint, options = {}) => {
     ? { credentials: "include", ...options }
     : {
         headers: isFormData 
-          ? { ...(options.headers || {}) } // Для FormData не добавляем Content-Type
+          ? { ...(options.headers || {}) } 
           : { "Content-Type": "application/json", ...(options.headers || {}) },
         credentials: "include",
         ...options,
@@ -58,11 +54,12 @@ export const apiRequest = async (endpoint, options = {}) => {
   
   if (!response.ok) {
     const data = await response.json().catch(() => ({}))
-    throw new Error(data.message || "Ошибка запроса")
+    throw new Error(data.message)
   }
   
   if (options.json === false) {
     return response
   }
+
   return response.json()
 }

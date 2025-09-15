@@ -43,7 +43,6 @@ export const getUserLocalDate = (dateString, userTimezone) => {
 export const formatHistoryDateTime = (dateString, userTimezone) => {
   if (!dateString) return ''
   const timeZone = userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone
-  // Принудительно добавляем Z, если нет таймзоны (считаем, что сервер отдаёт UTC)
   const iso = dateString.endsWith('Z') || dateString.match(/[+-]\d{2}:\d{2}$/)
     ? dateString
     : dateString + 'Z'
@@ -59,11 +58,9 @@ export const formatHistoryDateTime = (dateString, userTimezone) => {
   return format(date, 'dd.MM.yyyy, HH:mm', { timeZone })
 }
 
-// For messenger bubbles: separate label (Сегодня / dd.MM.yyyy) and time HH:mm
 export const formatMessageDateParts = (dateString, userTimezone) => {
   if (!dateString) return { label: '', time: '' }
   const timeZone = userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone
-  // Принудительно добавляем Z, если нет таймзоны (считаем, что сервер отдаёт UTC)
   const iso = dateString.endsWith('Z') || dateString.match(/[+-]\d{2}:\d{2}$/)
     ? dateString
     : dateString + 'Z'

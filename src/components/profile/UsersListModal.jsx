@@ -40,9 +40,7 @@ const UsersListModal = ({ open, title, users, loading, error, onClose, onUserCli
                 users.map(user => (
                   <div key={user.id} className="people-list-item" style={{ cursor: 'pointer' }} onClick={() => onUserClick && onUserClick(user)}>
                     <Avatar
-                      avatarKey={user.avatar_key || user.user_info?.avatar_key}
-                      userId={user.id || user.user_info?.id}
-                      isMyAvatar={false}
+                      avatarUrl={user.avatar_url || user.user_info?.avatar_url}
                       size={56}
                       alt={user.login}
                       className="people-list-avatar"

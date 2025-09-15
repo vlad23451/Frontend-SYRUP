@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import CommentsHeader from './CommentsHeader'
+
 import HistoryPreview from './HistoryPreview'
 import CommentList from './CommentList'
 import CommentInput from './CommentInput'
@@ -58,7 +58,6 @@ const CommentsModal = ({ open, history, onClose, onCommentCountUpdate }) => {
     <div className="custom-modal-backdrop" onClick={handleBackdrop}>
       <div className="custom-modal-wrapper" ref={containerRef}>
         <div className="custom-modal comments-modal" ref={modalRef}>
-        <CommentsHeader />
 
         <div className="comments-content">
           {history && <HistoryPreview history={history} />}

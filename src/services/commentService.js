@@ -28,7 +28,10 @@
 
 import { apiRequest } from '../utils/apiUtils'
 
-export const createComment = async (historyId, content, commentType = 'text', commentMetadata = {}) => {
+export const createComment = async (historyId,
+                                    content,
+                                    commentType = 'text',
+                                    commentMetadata = {}) => {
   return apiRequest('/comments', {
     method: 'POST',
     body: JSON.stringify({
@@ -54,18 +57,14 @@ export const deleteComment = async (commentId) => {
 export const updateComment = async (commentId, content) => {
   return apiRequest(`/comments/${commentId}`, {
     method: 'PUT',
-    body: JSON.stringify({
-      content
-    })
+    body: JSON.stringify({ content })
   })
 }
 
 export const createCommentLike = async (commentId) => {
   const response = await apiRequest('/comment-likes/', {
     method: 'POST',
-    body: JSON.stringify({
-      comment_id: commentId
-    })
+    body: JSON.stringify({ comment_id: commentId })
   })
   return response
 }
@@ -80,9 +79,7 @@ export const deleteCommentLike = async (likeId) => {
 export const createCommentDislike = async (commentId) => {
   const response = await apiRequest('/comment-dislikes/', {
     method: 'POST',
-    body: JSON.stringify({
-      comment_id: commentId
-    })
+    body: JSON.stringify({ comment_id: commentId })
   })
   return response
 }

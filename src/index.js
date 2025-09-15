@@ -25,6 +25,8 @@ import './styles/profile.css'
 import './styles/messenger.css'
 import './styles/auth.css'
 import './styles/comments.css'
+import './styles/notifications.css'
+import './styles/media-player.css'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(

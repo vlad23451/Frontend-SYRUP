@@ -65,7 +65,7 @@ class ErrorBoundary extends React.Component {
             <p>Произошла ошибка при загрузке страницы.</p>
             
             {/* Показываем детали только в разработке */}
-            {process.env.NODE_ENV === 'development' && (
+            {process.env.NODE_ENV === 'development' && (this.state.error || this.state.errorInfo) && (
               <details style={{ marginTop: '20px', textAlign: 'left' }}>
                 <summary>Техническая информация</summary>
                 <pre style={{ 
@@ -77,8 +77,12 @@ class ErrorBoundary extends React.Component {
                   marginTop: '10px'
                 }}>
                   {this.state.error && this.state.error.toString()}
-                  <br />
-                  {this.state.errorInfo.componentStack}
+                  {this.state.errorInfo?.componentStack && (
+                    <>
+                      <br />
+                      {this.state.errorInfo.componentStack}
+                    </>
+                  )}
                 </pre>
               </details>
             )}

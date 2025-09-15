@@ -19,19 +19,16 @@ export const useAvatarUrl = (avatarKey, userId = null, isMyAvatar = false) => {
 
   useEffect(() => {
     const loadAvatarUrl = async () => {
-      // Если нет ключа аватара, сбрасываем URL
       if (!avatarKey) {
         setAvatarUrl(null)
         return
       }
 
-      // Если avatarKey уже является полной ссылкой, используем её
       if (avatarKey.startsWith('http')) {
         setAvatarUrl(avatarKey)
         return
       }
 
-      // Иначе загружаем актуальную ссылку с сервера
       setLoading(true)
       try {
         let url = null
@@ -55,21 +52,10 @@ export const useAvatarUrl = (avatarKey, userId = null, isMyAvatar = false) => {
   return { avatarUrl, loading }
 }
 
-/**
- * Хук для получения URL своего аватара
- * @param {string} avatarKey - ключ аватара в S3
- * @returns {object} { avatarUrl, loading }
- */
 export const useMyAvatarUrl = (avatarKey) => {
   return useAvatarUrl(avatarKey, null, true)
 }
 
-/**
- * Хук для получения URL аватара другого пользователя
- * @param {string} avatarKey - ключ аватара в S3
- * @param {string|number} userId - ID пользователя
- * @returns {object} { avatarUrl, loading }
- */
 export const useUserAvatarUrl = (avatarKey, userId) => {
   return useAvatarUrl(avatarKey, userId, false)
 }

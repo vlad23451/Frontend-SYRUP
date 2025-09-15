@@ -1,14 +1,9 @@
 import { makeAutoObservable } from 'mobx'
+
 import { apiRequest } from '../utils/apiUtils'
 import { refreshToken } from '../services/authService'
 import { getCurrentUser } from '../services/userService'
 
-/**
- * AuthStore
- * - Отвечает за аутентификацию и текущего пользователя
- * - Сохраняет пользователя в localStorage для персистентности
- * - Умеет обновлять токен и подтягивать пользователя (`tryRefreshToken`)
- */
 class AuthStore {
   user = null
 
@@ -47,7 +42,7 @@ class AuthStore {
   async logout() {
     try {
       apiRequest("/auth/logout/", {method: "POST", json: false})
-    } catch (e) {}
+    } catch (error) {console.error(error)}
     this.clearAuth()
   }
 
@@ -63,7 +58,8 @@ class AuthStore {
       const user = await getCurrentUser()
       this.setUser(user)
       return true
-    } catch (e) {
+    } catch (error) {
+      console.error(error)
       this.clearAuth()
       return false
     }
@@ -71,5 +67,4 @@ class AuthStore {
 
 }
 
-const authStore = new AuthStore()
-export default authStore 
+export default new AuthStore() 

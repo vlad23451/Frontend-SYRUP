@@ -1,0 +1,305 @@
+/**
+ * Кастомные уведомления
+ * Стилизованные под дизайн сайта с поддержкой тем
+ */
+
+.custom-notification {
+  position: relative;
+  background: var(--panel-bg, var(--color-bg-secondary));
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  backdrop-filter: saturate(180%) blur(16px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 12px;
+  cursor: pointer;
+  overflow: hidden;
+  
+  /* Анимации */
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  /* Интерактивность */
+  user-select: none;
+}
+
+.custom-notification:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.custom-notification.visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.custom-notification.closing {
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.3s ease-in;
+}
+
+.custom-notification:hover {
+  transform: translateX(-4px);
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--color-primary);
+}
+
+/* Темная тема - дополнительные настройки */
+[data-theme="dark"] .custom-notification {
+  background: rgba(15, 23, 42, 0.85);
+  border-color: var(--color-border);
+}
+
+.notification-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  position: relative;
+}
+
+.notification-avatar {
+  flex-shrink: 0;
+  position: relative;
+}
+
+.notification-avatar::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  background: var(--color-primary);
+  border: 2px solid var(--color-bg-secondary);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.notification-body {
+  flex: 1;
+  min-width: 0; /* Для корректного обрезания текста */
+}
+
+.notification-sender {
+  font-weight: 600;
+  font-size: 0.95em;
+  color: var(--color-text);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notification-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--color-text-secondary);
+  font-size: 0.9em;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.notification-icon {
+  flex-shrink: 0;
+  font-size: 1em;
+  margin-top: 1px;
+}
+
+.notification-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  opacity: 0.6;
+}
+
+.notification-close:hover {
+  background: var(--interactive-hover-bg);
+  color: var(--color-text);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.notification-close:active {
+  transform: scale(0.95);
+}
+
+/* Прогресс-бар автозакрытия (10 секунд) */
+.notification-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+[data-theme="dark"] .notification-progress {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.notification-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-btn-bg-hover));
+  width: 100%;
+  transform: translateX(-100%);
+  animation: progress linear forwards;
+}
+
+@keyframes progress {
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Контейнер для уведомлений */
+.notifications-container {
+  position: fixed;
+  top: 80px; /* Под навигацией */
+  right: 20px;
+  width: 320px;
+  max-width: calc(100vw - 40px);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.notifications-container > * {
+  pointer-events: auto;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  .notifications-container {
+    top: 70px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+    max-width: none;
+  }
+  
+  .notification-content {
+    padding: 14px;
+    gap: 10px;
+  }
+  
+  .notification-avatar {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .notification-sender {
+    font-size: 0.9em;
+  }
+  
+  .notification-message {
+    font-size: 0.85em;
+  }
+}
+
+/* Специальные эффекты для разных типов уведомлений */
+.custom-notification.notification-urgent {
+  border-left: 4px solid #ef4444;
+  animation: shake 0.5s ease-in-out;
+}
+
+.custom-notification.notification-urgent .notification-progress-bar {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+/* Анимация при добавлении нового уведомления */
+.custom-notification.notification-new {
+  animation: slideInBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes slideInBounce {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  60% {
+    transform: translateX(-10px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Эффект при наведении на группу уведомлений */
+.notifications-container:hover .custom-notification:not(:hover) {
+  opacity: 0.7;
+  transform: scale(0.98);
+}
+
+.notifications-container .custom-notification:hover {
+  z-index: 10;
+}
+
+/* Действия для уведомлений */
+.notifications-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.notifications-clear-all {
+  background: var(--color-bg-secondary);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  backdrop-filter: saturate(180%) blur(16px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  color: var(--color-text-secondary);
+  font-size: 0.8em;
+  font-weight: 500;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.notifications-clear-all:hover {
+  background: var(--interactive-hover-bg);
+  color: var(--color-text);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.notifications-clear-all:active {
+  transform: translateY(0);
+}

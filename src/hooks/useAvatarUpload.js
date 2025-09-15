@@ -40,10 +40,6 @@ export const useAvatarUpload = () => {
   const [error, setError] = useState('')
   const { auth } = useStore()
 
-  /**
-   * Обрабатывает выбор файла аватарки
-   * @param {Event} e - событие выбора файла
-   */
   const handleFileChange = (e) => {
     const file = e.target.files[0]
     setError('')
@@ -53,7 +49,6 @@ export const useAvatarUpload = () => {
       return
     }
 
-    // Создаем предварительный просмотр
     const reader = new FileReader()
     reader.onload = (ev) => {
       setAvatarPreview(ev.target.result)
@@ -65,10 +60,7 @@ export const useAvatarUpload = () => {
     setAvatarFile(file)
   }
 
-  /**
-   * Загружает аватарку на сервер
-   * @returns {Promise<Object|null>} результат загрузки или null при ошибке
-   */
+
   const uploadAvatar = async () => {
     if (!avatarFile) {
       setError('Файл не выбран')
@@ -81,7 +73,6 @@ export const useAvatarUpload = () => {
     try {
       const response = await uploadAvatarService(avatarFile)
       
-      // Обновляем данные пользователя в сторе
       if (response.avatar_key && auth.user) {
         auth.setUser({
           ...auth.user,
@@ -89,22 +80,18 @@ export const useAvatarUpload = () => {
         })
       }
 
-      // Очищаем выбранный файл после успешной загрузки
+      
       clearAvatar()
       
       return response
-    } catch (err) {
-      setError(err.message)
+    } catch (error) {
+      setError(error.message)
       return null
     } finally {
       setUploading(false)
     }
   }
 
-  /**
-   * Удаляет текущую аватарку пользователя
-   * @returns {Promise<boolean>} успешность удаления
-   */
   const removeAvatar = async () => {
     setUploading(true)
     setError('')
@@ -112,7 +99,6 @@ export const useAvatarUpload = () => {
     try {
       await deleteAvatar()
       
-      // Обновляем данные пользователя в сторе
       if (auth.user) {
         auth.setUser({
           ...auth.user,
@@ -122,17 +108,14 @@ export const useAvatarUpload = () => {
 
       clearAvatar()
       return true
-    } catch (err) {
-      setError(err.message)
+    } catch (error) {
+      setError(error.message)
       return false
     } finally {
       setUploading(false)
     }
   }
 
-  /**
-   * Очищает выбранную аватарку и превью
-   */
   const clearAvatar = () => {
     setAvatarFile(null)
     setAvatarPreview(null)

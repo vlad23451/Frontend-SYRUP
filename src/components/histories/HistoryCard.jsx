@@ -1,21 +1,17 @@
-/**
- * @fileoverview Карточка истории
- * 
- * Компонует заголовок, контент, действия, модалку комментариев, модалку редактирования
- * и подтверждение удаления. Делегирует действия наружу через колбэки
- * `onDelete`, `onUpdate` для синхронного обновления списков/MobX.
- */
 import { useState } from 'react'
+
 import { useHistoryComments } from '../../hooks/useHistoryComments'
 import { useHistoryActions } from '../../hooks/useHistoryActions'
 import { useHistoryDates } from '../../hooks/useHistoryDates'
 import { useCommentsModal } from '../../hooks/useCommentsModal'
+
 import HistoryHeader from './HistoryHeader'
 import HistoryActions from './HistoryActions'
 import HistoryContent from './HistoryContent'
 import CommentsModal from '../comments/CommentsModal'
 import EditHistoryModal from './EditHistoryModal'
 import ConfirmModal from '../common/ConfirmModal'
+import { getUserFromStorage } from '../../utils/localStorageUtils'
 
 const HistoryCard = ({ history, onDelete, onUpdate, forceMeAsAuthor = false, overrideAuthor, isOwner: isOwnerProp }) => {
   const { commentCount, updateCommentCount } = useHistoryComments(history)
@@ -30,9 +26,7 @@ const HistoryCard = ({ history, onDelete, onUpdate, forceMeAsAuthor = false, ove
   const { publishedAtStr, updatedAtStr, hasUpdate } = useHistoryDates(history)
   const { commentsModal, handleOpenCommentsModal, handleCloseCommentsModal } = useCommentsModal()
 
-  const currentUser = (() => {
-    try { return JSON.parse(localStorage.getItem('user')) } catch { return null }
-  })()
+  const currentUser = getUserFromStorage()
   const isOwnerComputed = Boolean(history?.author?.id && currentUser?.user_info?.id === history.author.id)
   const isOwner = typeof isOwnerProp === 'boolean' ? isOwnerProp : isOwnerComputed
 
@@ -42,9 +36,11 @@ const HistoryCard = ({ history, onDelete, onUpdate, forceMeAsAuthor = false, ove
   const handleEditClose = () => setEditOpen(false)
 
   return (
-    <div className="history-card history-card-bordered wide">
+    <div className="history-card history-card-bordered wide history-card-anchor" data-id={history.id}>
       <HistoryHeader history={history} forceMeAsAuthor={forceMeAsAuthor} overrideAuthor={overrideAuthor} />
+
       <HistoryContent history={history} />
+
       <HistoryActions 
         history={history}
         commentCount={commentCount}
@@ -57,12 +53,14 @@ const HistoryCard = ({ history, onDelete, onUpdate, forceMeAsAuthor = false, ove
         isDeleting={isDeleting}
         isOwner={isOwner}
       />
+
       <CommentsModal 
         open={commentsModal.open}
         history={history}
         onClose={handleCloseCommentsModal}
         onCommentCountUpdate={updateCommentCount}
       />
+
       <ConfirmModal
         open={showConfirmModal}
         message="Вы уверены, что хотите удалить эту историю?"
@@ -71,12 +69,14 @@ const HistoryCard = ({ history, onDelete, onUpdate, forceMeAsAuthor = false, ove
         confirmText="Удалить"
         cancelText="Отмена"
       />
+
       <EditHistoryModal 
         isOpen={isEditOpen}
         onClose={handleEditClose}
         history={history}
         onSuccess={(updated) => {onUpdate(updated)}}
       />
+
     </div>
   )
 }

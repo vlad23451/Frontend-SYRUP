@@ -75,6 +75,10 @@
   align-items: center;
   gap: 14px;
   margin-bottom: 6px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .profile-modal-avatar {
@@ -83,20 +87,36 @@
   border-radius: 50%;
   object-fit: cover;
   box-shadow: var(--shadow-sm);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .profile-modal-title h3 {
   margin: 0;
   font-size: 1.25em;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .profile-modal-sub {
   color: var(--color-text-secondary);
   font-size: 0.95em;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .profile-modal-body {
   margin: 8px 0 12px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .custom-modal-header {

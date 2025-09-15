@@ -2,20 +2,18 @@ import React, { useRef, useEffect } from 'react'
 import MessageItem from './MessageItem'
 import { formatMessageDateParts } from '../../utils/dateUtils'
 
-const MessageList = ({ messages, username, onDeleteAt, onReply, onSelectToggle, selectedIndices = [] }) => {
+const MessageList = ({ messages, username, onDeleteAt, onDeleteById, onEditById, onReply, onSelectToggle, selectedIndices = [] }) => {
   const messagesEndRef = useRef(null)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Группируем сообщения по дате (Сегодня / dd.MM.yyyy)
   const groups = (() => {
     const map = new Map()
-    for (const m of messages) {
-      // Используем timestamp если есть, иначе time для обратной совместимости
-      const messageTime = m.timestamp || m.time
-      const key = formatMessageDateParts(messageTime).label
+    const messagesArray = Array.isArray(messages) ? messages : []
+    for (const m of messagesArray) { 
+      const key = formatMessageDateParts(m.timestamp).label
       if (!map.has(key)) map.set(key, [])
       map.get(key).push(m)
     }
@@ -42,7 +40,9 @@ const MessageList = ({ messages, username, onDeleteAt, onReply, onSelectToggle, 
               onReply={(_, m) => { onReply?.(m) }}
               onCopy={() => { try { navigator.clipboard.writeText(msg.text || '') } catch {} }}
               onEdit={() => { /* TODO: открыть инлайн-редактор */ }}
+              onEditById={onEditById}
               onDelete={() => { onDeleteAt?.(idx) }}
+              onDeleteById={onDeleteById}
               onSelect={() => onSelectToggle?.(idx)}
               selected={selectedIndices.includes(idx)}
               onPin={(_, m) => onSelectToggle?.(idx)}

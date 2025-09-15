@@ -28,8 +28,7 @@ const UserProfileInfo = ({ user }) => {
   return (
     <div className="profile-info">
       <h2 className="profile-name">{user.user_info.login}</h2>
-      <p className="profile-email">@{user.user_info.login}</p>
-      <p className="profile-description">{user.user_info.about || 'Описание отсутствует'}</p>
+      <p className="profile-description">{user.user_info.about}</p>
       <div className="profile-stats">
         <button className="stat-item" style={{cursor:'pointer', background:'transparent', border:'1px solid var(--color-border)', borderRadius:'8px', padding:'8px 12px'}} onClick={() => openModal('friends')}>
           <span className="stat-number">{user.friends}</span>

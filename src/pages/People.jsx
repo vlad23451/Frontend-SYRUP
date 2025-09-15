@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react'
+import { useLocation } from 'react-router-dom'
+
 import PeopleList from '../components/people/PeopleList'
 import '../components/people/PeopleList.css'
-import { useLocation } from 'react-router-dom'
 
 const People = () => {
   const location = useLocation()

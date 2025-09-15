@@ -26,13 +26,17 @@ export const login = async (login, password) => {
     method: "POST",
     body: JSON.stringify({ login, password })
   })
-  if (!response.user || !response.token) {
+  
+  // Если ответ не содержит поле user, создаем fallback структуру
+  if (!response.user && !response.token) {
     return {
-      user: { login },
+      user: { login, ...response },
       token: 'mock-token-123',
+      user_id: response.id || response.user_id,
       ...response
     }
   }
+  
   return response
 }
 
@@ -42,13 +46,16 @@ export const register = async (login, password, about) => {
     body: JSON.stringify({ login, password, about })
   })
   
-  if (!response.user || !response.token) {
+  // Если ответ не содержит поле user, создаем fallback структуру
+  if (!response.user && !response.token) {
     return {
-      user: { login, about },
+      user: { login, about, ...response },
       token: 'mock-token-123',
+      user_id: response.id || response.user_id,
       ...response
     }
   }
+  
   return response
 }
 

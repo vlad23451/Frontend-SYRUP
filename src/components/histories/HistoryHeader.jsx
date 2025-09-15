@@ -1,5 +1,6 @@
 import { useProfile } from '../../hooks/useProfile'
 import { useProfileModal } from '../../contexts/ProfileModalContext'
+import Avatar from '../ui/Avatar'
 
 const HistoryHeader = ({ history, forceMeAsAuthor = false, overrideAuthor }) => {
   const { getAuthorInfo } = useProfile()
@@ -25,8 +26,9 @@ const HistoryHeader = ({ history, forceMeAsAuthor = false, overrideAuthor }) => 
           onClick={targetUserId ? handleAuthorClick : undefined}
           title={targetUserId ? 'Показать профиль автора' : ''}
         >
-          <img
-            src={displayAvatar}
+          <Avatar
+            avatarUrl={displayAvatar}
+            size={40}
             alt={displayLogin}
             className="author-avatar-top"
           />

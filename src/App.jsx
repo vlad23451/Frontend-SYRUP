@@ -20,7 +20,7 @@
  * @version 1.0.0
  */
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom"
 import { useEffect } from "react"
 
 import Login from "./pages/Login"
@@ -43,6 +43,7 @@ import ProfileModal from './components/profile/ProfileModal'
 import { useProfileModal } from './contexts/ProfileModalContext'
 
 import connectService from "./services/connectService"
+import NotificationContainer from './components/ui/NotificationContainer'
 
 const GlobalProfileModal = () => {
   const { modalState, closeProfileModal, handleGoToChat, handleGoToProfile } = useProfileModal()
@@ -82,7 +83,20 @@ const SettingsPortals = () => {
 }
 
 const InitServices = () => {
-  useEffect(() => { connectService() }, [])
+  useEffect(() => { 
+    connectService()
+  }, [])
+  
+  return null
+}
+
+const SPANavigationTracker = () => {
+  const location = useLocation()
+  
+  useEffect(() => {
+    sessionStorage.setItem('spa-navigation', 'true')
+  }, [location.pathname])
+  
   return null
 }
 
@@ -94,6 +108,7 @@ const App = () => {
               <ProfileModalProvider>
                 <div className="main-container">
                 <InitServices />
+                <SPANavigationTracker />
                 <main className="page-container">
                 <Routes>
                   <Route path="/login" element={<Login/>}/>
@@ -139,6 +154,7 @@ const App = () => {
               <Dock />
               <SettingsPortals />
               <GlobalProfileModal />
+              <NotificationContainer />
             </div>
               </ProfileModalProvider>
           </SettingsProvider>

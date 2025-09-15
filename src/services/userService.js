@@ -29,13 +29,6 @@ export const getCurrentUser = async () => {
   return apiRequest('/user/me')
 }
 
-export const updateAvatar = async (avatarBase64) => {
-  return apiRequest('/user/me/avatar', {
-    method: 'PATCH',
-    body: JSON.stringify({ avatar: avatarBase64 })
-  })
-}
-
 export const getUserById = async (id) => {
   return apiRequest(`/user/profile/${id}`)
 }

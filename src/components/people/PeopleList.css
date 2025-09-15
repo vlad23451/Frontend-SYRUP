@@ -6,7 +6,8 @@
 }
 
 .people-list-item {
-  background: linear-gradient(120deg, #23243a 60%, #2d2e4a 100%);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
   border-radius: 14px;
   box-shadow: 0 2px 12px rgba(44,62,80,0.10);
   padding: 14px 22px;
@@ -26,7 +27,7 @@
   border-radius: 50%;
   object-fit: cover;
   margin-right: 20px;
-  background: #23243a;
+  background: var(--color-bg);
   box-shadow: 0 1px 4px rgba(44,62,80,0.10);
   border: 2px solid var(--color-primary, #2d72d9);
 }
