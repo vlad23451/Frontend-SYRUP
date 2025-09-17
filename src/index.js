@@ -1,18 +1,6 @@
-/**
- * @fileoverview Главная точка входа в React приложение
- * 
- * Этот файл является корневым для React приложения. Он:
- * - Импортирует React и ReactDOM
- * - Создает корневой элемент для рендеринга
- * - Подключает главный компонент App
- * - Импортирует глобальные стили
- * 
- * @author SYRUP CHAT Team
- * @version 1.0.0
- */
-
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+
 import App from './App'
 import { StoreProvider } from './stores/StoreContext'
 

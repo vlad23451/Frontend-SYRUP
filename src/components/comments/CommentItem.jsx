@@ -18,10 +18,16 @@ const CommentItem = ({
   onDelete,
   isAuthenticated,
   isOwnComment,
+  loadingReactions,
 }) => {
   const c = comment
   const { openProfileModal } = useProfileModal()
   const userId = c?.user_info?.id
+  
+  // Проверяем, загружается ли реакция для этого комментария
+  const isLikeLoading = loadingReactions.has(`like-${c.id}`)
+  const isDislikeLoading = loadingReactions.has(`dislike-${c.id}`)
+  
   const handleOpenProfile = (e) => {
     e.stopPropagation()
     if (userId) openProfileModal(userId)
@@ -73,8 +79,12 @@ const CommentItem = ({
             onClick={() => toggleLike(c.id)}
             aria-pressed={!!c.isLikeActive}
             title={c.isLikeActive ? 'Убрать лайк' : 'Поставить лайк'}
-            style={{ color: c.isLikeActive ? '#1E90FF' : undefined }}
-            disabled={!isAuthenticated}
+            style={{ 
+              color: c.isLikeActive ? '#1E90FF' : undefined,
+              opacity: isLikeLoading ? 0.6 : undefined,
+              cursor: 'pointer'
+            }}
+            disabled={!isAuthenticated || isLikeLoading}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.58 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L22 10z" fill="currentColor"/>
@@ -88,8 +98,12 @@ const CommentItem = ({
             onClick={() => toggleDislike(c.id)}
             aria-pressed={!!c.isDislikeActive}
             title={c.isDislikeActive ? 'Убрать дизлайк' : 'Поставить дизлайк'}
-            style={{ color: c.isDislikeActive ? '#1E90FF' : undefined }}
-            disabled={!isAuthenticated}
+            style={{ 
+              color: c.isDislikeActive ? '#1E90FF' : undefined,
+              opacity: isDislikeLoading ? 0.6 : undefined,
+              cursor: 'pointer'
+            }}
+            disabled={!isAuthenticated || isDislikeLoading}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22L1.14 11.27c-.09.23-.14.47-.14.73v1.91C1 15.9 1.9 16.8 3 16.8h6l-1 4.57c-.05.23-.05.46 0 .68.12.5.49.88.95 1.02.1.03.21.05.31.05.38 0 .74-.15 1.02-.43L17 18.8c.38-.38.59-.89.59-1.41V5c0-1.1-.9-2-2-2zm4 0h-2v12h2V3z" fill="currentColor"/>

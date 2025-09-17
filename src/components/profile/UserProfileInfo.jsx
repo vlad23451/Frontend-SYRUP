@@ -1,10 +1,11 @@
 import React, { useCallback, useState } from 'react'
+import { observer } from 'mobx-react-lite'
 import UsersListModal from './UsersListModal'
 import SubscribeButton from './SubscribeButton'
 import { getFriends, getFollowers, getFollowing } from '../../services/userService'
 import { useProfileModal } from '../../contexts/ProfileModalContext'
 
-const UserProfileInfo = ({ user }) => {
+const UserProfileInfo = observer(({ user, onCountersUpdate, onMyCountersUpdate }) => {
   const { openProfileModal } = useProfileModal()
   const [modal, setModal] = useState({ open: false, title: '', loading: false, error: null, users: [] })
 
@@ -23,7 +24,7 @@ const UserProfileInfo = ({ user }) => {
 
   const closeModal = useCallback(() => setModal(m => ({ ...m, open: false })), [])
 
-  if (!user) return null
+  if (!user || !user.user_info) return null
 
   return (
     <div className="profile-info">
@@ -67,12 +68,14 @@ const UserProfileInfo = ({ user }) => {
             <SubscribeButton
               FollowStatus={followStatus}
               targetId={targetId}
+              onCountersUpdate={onCountersUpdate}
+              onMyCountersUpdate={onMyCountersUpdate}
             />
           )
         }}
       />
     </div>
   )
-}
+})
 
 export default UserProfileInfo

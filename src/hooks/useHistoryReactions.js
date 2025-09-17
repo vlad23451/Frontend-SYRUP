@@ -13,6 +13,7 @@ export const useHistoryReactions = (history) => {
   const [isDislikeActive, setIsDislikeActive] = useState(false)
   const [likeCount, setLikeCount] = useState(history.likes || 0)
   const [dislikeCount, setDislikeCount] = useState(history.dislikes || 0)
+  const [loadingReactions, setLoadingReactions] = useState(new Set())
 
   // Инициализация состояний из данных истории
   useEffect(() => {
@@ -28,48 +29,78 @@ export const useHistoryReactions = (history) => {
   const handleToggleLike = async () => {
     if (!auth?.user) return
     
+    // Проверяем, не выполняется ли уже запрос для этой истории
+    if (loadingReactions.has('like')) return
+    
+    // Добавляем в набор загружающихся реакций
+    setLoadingReactions(prev => new Set(prev).add('like'))
+    
     try {
+      // Используем prevState для безопасного обновления состояния
       if (isLikeActive) {
         await deleteHistoryLike(history.id)
-        setIsLikeActive(false)
-        setLikeCount((c) => Math.max(0, c - 1))
+        setIsLikeActive(prev => false)
+        setLikeCount(prev => Math.max(0, prev - 1))
       } else {
         await createHistoryLike(history.id)
-        setIsLikeActive(true)
-        setLikeCount((c) => c + 1)
+        setIsLikeActive(prev => true)
+        setLikeCount(prev => prev + 1)
         
+        // Если был активен дизлайк, убираем его
         if (isDislikeActive) {
           await deleteHistoryDislike(history.id)
-          setIsDislikeActive(false)
-          setDislikeCount((c) => Math.max(0, c - 1))
+          setIsDislikeActive(prev => false)
+          setDislikeCount(prev => Math.max(0, prev - 1))
         }
       }
     } catch (err) {
       console.error('Ошибка при работе с лайком истории:', err)
+    } finally {
+      // Убираем из набора загружающихся реакций
+      setLoadingReactions(prev => {
+        const newSet = new Set(prev)
+        newSet.delete('like')
+        return newSet
+      })
     }
   }
 
   const handleToggleDislike = async () => {
     if (!auth?.user) return
     
+    // Проверяем, не выполняется ли уже запрос для этой истории
+    if (loadingReactions.has('dislike')) return
+    
+    // Добавляем в набор загружающихся реакций
+    setLoadingReactions(prev => new Set(prev).add('dislike'))
+    
     try {
+      // Используем prevState для безопасного обновления состояния
       if (isDislikeActive) {
         await deleteHistoryDislike(history.id)
-        setIsDislikeActive(false)
-        setDislikeCount((c) => Math.max(0, c - 1))
+        setIsDislikeActive(prev => false)
+        setDislikeCount(prev => Math.max(0, prev - 1))
       } else {
         await createHistoryDislike(history.id)
-        setIsDislikeActive(true)
-        setDislikeCount((c) => c + 1)
+        setIsDislikeActive(prev => true)
+        setDislikeCount(prev => prev + 1)
         
+        // Если был активен лайк, убираем его
         if (isLikeActive) {
           await deleteHistoryLike(history.id)
-          setIsLikeActive(false)
-          setLikeCount((c) => Math.max(0, c - 1))
+          setIsLikeActive(prev => false)
+          setLikeCount(prev => Math.max(0, prev - 1))
         }
       }
     } catch (err) {
       console.error('Ошибка при работе с дизлайком истории:', err)
+    } finally {
+      // Убираем из набора загружающихся реакций
+      setLoadingReactions(prev => {
+        const newSet = new Set(prev)
+        newSet.delete('dislike')
+        return newSet
+      })
     }
   }
 
@@ -78,6 +109,7 @@ export const useHistoryReactions = (history) => {
     isDislikeActive,
     likeCount,
     dislikeCount,
+    loadingReactions,
     handleToggleLike,
     handleToggleDislike,
     isAuthenticated: !!auth?.user

@@ -22,6 +22,15 @@ class ProfileStore {
     this.user = user
   }
 
+  updateUserCounters(followersDelta, followingDelta) {
+    if (this.user) {
+      runInAction(() => {
+        this.user.followers = Math.max(0, (this.user.followers || 0) + followersDelta)
+        this.user.following = Math.max(0, (this.user.following || 0) + followingDelta)
+      })
+    }
+  }
+
   async fetchProfile() {
     this.setLoading(true)
     this.setError(null)

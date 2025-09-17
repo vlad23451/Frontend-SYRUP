@@ -71,6 +71,12 @@ const MyProfileInfo = observer(() => {
             <SubscribeButton
               FollowStatus={followStatus}
               targetId={targetId}
+              onCountersUpdate={(followersDelta, followingDelta) => {
+                profile.updateUserCounters(followersDelta, followingDelta)
+              }}
+              onMyCountersUpdate={(followersDelta, followingDelta) => {
+                profile.updateUserCounters(followersDelta, followingDelta)
+              }}
             />
           )
         }}

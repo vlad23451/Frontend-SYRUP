@@ -75,27 +75,32 @@ export const useMessengerController = (selectedChat) => {
 
       const items = messages.items || []
       const unreadIncoming = items.filter(m => !m.from_me && (m.is_read === false || m.is_read === undefined))
-      if (unreadIncoming.length === 0) return
-
-      const lastUnread = unreadIncoming[unreadIncoming.length - 1]
-      let untilTimestamp = lastUnread?.timestamp || lastUnread?.time
       
-      // Если время не найдено в данных сообщения, попробуем получить из DOM
-      if (!untilTimestamp) {
-        untilTimestamp = getLastUnreadMessageTimeFromDOM()
+      // Обновляем счетчик непрочитанных сообщений на основе текущего состояния
+      messages.updateUnreadCountForChat(currentChatId)
+      
+      // Если есть непрочитанные сообщения, отправляем mark_as_read
+      if (unreadIncoming.length > 0) {
+        const lastUnread = unreadIncoming[unreadIncoming.length - 1]
+        let untilTimestamp = lastUnread?.timestamp || lastUnread?.time
+        
+        // Если время не найдено в данных сообщения, попробуем получить из DOM
+        if (!untilTimestamp) {
+          untilTimestamp = getLastUnreadMessageTimeFromDOM()
+        }
+        
+        if (!untilTimestamp) return
+
+        const prev = lastMarkSentRef.current
+        if (prev && prev.chatId === currentChatId && prev.until === untilTimestamp) return
+
+        websocket.sendMarkAsRead(currentChatId, userId, untilTimestamp)
+        lastMarkSentRef.current = { chatId: currentChatId, until: untilTimestamp }
       }
-      
-      if (!untilTimestamp) return
-
-      const prev = lastMarkSentRef.current
-      if (prev && prev.chatId === currentChatId && prev.until === untilTimestamp) return
-
-      websocket.sendMarkAsRead(currentChatId, userId, untilTimestamp)
-      lastMarkSentRef.current = { chatId: currentChatId, until: untilTimestamp }
     } catch (error) {
       console.error('Ошибка при отправке mark_as_read:', error)
     }
-  }, [messages.items, chat.selectedChat, websocket])
+  }, [messages.items, chat.selectedChat, websocket, chat, messages])
 
   const handleSend = useCallback(async (text, file) => {
     if (!text?.trim() && !file) {

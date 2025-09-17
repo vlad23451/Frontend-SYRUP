@@ -5,6 +5,7 @@ import ChatStore from './ChatStore'
 import MessagesStore from './MessagesStore'
 import ProfileStore from './ProfileStore'
 import UserProfileStore from './UserProfileStore'
+import UserStatusStore from './UserStatusStore'
 import WebSocketStore from './WebSocketStore'
 
 class RootStore {
@@ -16,6 +17,7 @@ class RootStore {
     this.messages = MessagesStore
     this.profile = ProfileStore
     this.userProfile = UserProfileStore
+    this.userStatus = UserStatusStore
     this.websocket = WebSocketStore
   }
 }

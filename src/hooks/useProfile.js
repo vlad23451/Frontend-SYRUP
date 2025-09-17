@@ -9,6 +9,7 @@ export const useProfile = () => {
   
   const currentUserId = auth.user?.user_info?.id || userInfo?.id
   const myLogin = auth.user?.user_info?.login || userInfo?.login
+  // Принудительно используем аватарку из стора, если она есть
   const myAvatarUrl = auth.user?.user_info?.avatar_url || userInfo?.avatar_url 
 
   const getAuthorInfo = (history, options = {}) => {
@@ -22,7 +23,8 @@ export const useProfile = () => {
     if (forceMeAsAuthor) {
       const displayLogin = myLogin
       const fallbackName = myLogin
-      const displayAvatar = myAvatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(fallbackName)}&background=random`
+      // Принудительно используем аватарку из стора, если она есть
+      const displayAvatar = auth.user?.user_info?.avatar_url || myAvatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(fallbackName)}&background=random`
       const targetUserId = currentUserId
 
       return {

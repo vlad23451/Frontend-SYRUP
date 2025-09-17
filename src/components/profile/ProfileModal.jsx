@@ -3,12 +3,14 @@ import ModalHeader from '../ui/ModalHeader'
 import { useDraggableModal } from '../../hooks/useDraggableModal'
 import UserProfileInfo from './UserProfileInfo'
 import SubscribeButton from './SubscribeButton'
+import { useStore } from '../../stores/StoreContext'
 import Avatar from '../ui/Avatar'
 
 const ProfileModal = ({ open, user, loading, error, onClose, onGoToChat, onGoToProfile }) => {
   const containerRef = useRef(null)
   const handleRef = useRef(null)
   const [dragging, setDragging] = useState(false)
+  const { profile } = useStore()
   const handleBackdropClick = useCallback((e) => {
     if (e.target.classList.contains('custom-modal-backdrop')) {
       onClose && onClose()
@@ -43,7 +45,7 @@ const ProfileModal = ({ open, user, loading, error, onClose, onGoToChat, onGoToP
 
         {error && <div className="modal-error">Ошибка: {error}</div>}
         
-        {user && (
+        {user && user.user_info && (
           <>
             <div className="profile-modal-header" style={{justifyContent: 'center'}}>
               <Avatar
@@ -59,10 +61,15 @@ const ProfileModal = ({ open, user, loading, error, onClose, onGoToChat, onGoToP
             </div>
             <div className="profile-modal-title" style={{textAlign: 'center'}}>
               <h3>{user.login}</h3>
-              {/*<span className="profile-modal-sub">{user.name || ''}</span>*/}
             </div>
             <div className="profile-modal-body">
-              <UserProfileInfo user={user} />
+              <UserProfileInfo 
+                user={user} 
+                onCountersUpdate={() => {}} 
+                onMyCountersUpdate={(followersDelta, followingDelta) => {
+                  profile.updateUserCounters(followersDelta, followingDelta)
+                }} 
+              />
             </div>
             <div className="custom-modal-actions">
               <button className="custom-modal-btn" onClick={onGoToProfile}>Перейти в профиль</button>
@@ -71,6 +78,10 @@ const ProfileModal = ({ open, user, loading, error, onClose, onGoToChat, onGoToP
                 <SubscribeButton
                   FollowStatus={user.user_info.follow_status}
                   targetId={user.user_info.id}
+                  onCountersUpdate={() => {}}
+                  onMyCountersUpdate={(followersDelta, followingDelta) => {
+                    profile.updateUserCounters(followersDelta, followingDelta)
+                  }}
                 />
               )}
             </div>

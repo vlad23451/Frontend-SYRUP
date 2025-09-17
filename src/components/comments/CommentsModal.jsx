@@ -17,6 +17,7 @@ const CommentsModal = ({ open, history, onClose, onCommentCountUpdate }) => {
     editingComment,
     editText,
     deleteConfirm,
+    loadingReactions,
     endRef,
     setNewComment,
     setEditText,
@@ -89,6 +90,7 @@ const CommentsModal = ({ open, history, onClose, onCommentCountUpdate }) => {
                 endRef={endRef}
                 isAuthenticated={isAuthenticated}
                 isOwnComment={isOwnComment}
+                loadingReactions={loadingReactions}
               />
 
               <CommentInput

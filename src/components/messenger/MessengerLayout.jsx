@@ -8,11 +8,14 @@ import { useDraggableModal } from '../../hooks/useDraggableModal'
 import ModalHeader from '../ui/ModalHeader'
 import Avatar from '../ui/Avatar'
 import { useStore } from '../../stores/StoreContext'
+import { useProfileModal } from '../../contexts/ProfileModalContext'
+import UserStatus from './UserStatus'
 
 const MessengerLayout = observer(({ selectedChat }) => {
   const ctrl = useMessengerController(selectedChat)
   const { chat } = useStore()
   const navigate = useNavigate()
+  const { openProfileModal } = useProfileModal()
   const [attachmentsOpen, setAttachmentsOpen] = useState(false)
   const [muteOpen, setMuteOpen] = useState(false)
   const [muteValue, setMuteValue] = useState('1h')
@@ -27,6 +30,14 @@ const MessengerLayout = observer(({ selectedChat }) => {
 
   const isNewDialog = !selectedChat
   const isLoadingRoom = chat.loadingChatId
+  const companionId = selectedChat?.companion_id || selectedChat?.companionId || selectedChat?.id
+  const hasCompanionId = !!companionId
+
+  const handleProfileClick = () => {
+    if (companionId) {
+      openProfileModal(companionId)
+    }
+  }
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -57,16 +68,27 @@ const MessengerLayout = observer(({ selectedChat }) => {
     <div className="messenger-main">
       <div className="chat-header" style={{ display: 'flex', alignItems: 'center', borderBottom: selectedChat ? undefined : 'none' }}>
         {selectedChat && (
-          <Avatar
-            avatarUrl={selectedChat?.companion_avatar_url}
-            size={56}
-            alt="Аватар"
-            className="chat-user-avatar"
-          />
+          <div 
+            onClick={hasCompanionId ? handleProfileClick : undefined}
+            style={{ cursor: hasCompanionId ? 'pointer' : 'default' }}
+            title={hasCompanionId ? "Открыть профиль" : undefined}
+          >
+            <Avatar
+              avatarUrl={selectedChat?.companion_avatar_url}
+              size={56}
+              alt="Аватар"
+              className="chat-user-avatar"
+            />
+          </div>
         )}
         <div className="chat-user-info" style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0, marginLeft: selectedChat ? '16px' : '0' }}>
           <div className="chat-user-name-row" style={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
-            <div className="chat-user-name" style={{ marginRight: 16 }}>
+            <div 
+              className="chat-user-name" 
+              style={{ marginRight: 16, cursor: hasCompanionId ? 'pointer' : 'default' }}
+              onClick={hasCompanionId ? handleProfileClick : undefined}
+              title={hasCompanionId ? "Открыть профиль" : undefined}
+            >
               {selectedChat ? (selectedChat?.title || selectedChat?.companion_login) : ''}
               {isLoadingRoom && (
                 <span style={{ marginLeft: 8, fontSize: '12px', color: 'var(--color-text-secondary)' }}>
@@ -75,7 +97,7 @@ const MessengerLayout = observer(({ selectedChat }) => {
               )}
             </div>
             {selectedChat && (
-              <div className="chat-user-status online">{isNewDialog ? '' : 'в сети'}</div>
+              <UserStatus userId={selectedChat.companion_id || selectedChat.companionId || selectedChat.id} />
             )}
           </div>
         </div>

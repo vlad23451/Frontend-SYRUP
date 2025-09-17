@@ -75,3 +75,67 @@ export const formatMessageDateParts = (dateString, userTimezone) => {
     time: format(date, 'HH:mm', { timeZone })
   }
 }
+
+export const formatChatSidebarTime = (dateString, userTimezone) => {
+  if (!dateString) return ''
+  const timeZone = userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone
+  const iso = dateString.endsWith('Z') || dateString.match(/[+-]\d{2}:\d{2}$/)
+    ? dateString
+    : dateString + 'Z'
+  const date = toZonedTime(new Date(iso), timeZone)
+  const now = toZonedTime(new Date(), timeZone)
+  
+  const isToday =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear()
+  
+  const isYesterday =
+    date.getDate() === now.getDate() - 1 &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear()
+  
+  if (isToday) {
+    return format(date, 'HH:mm', { timeZone })
+  } else if (isYesterday) {
+    return `Вчера, ${format(date, 'HH:mm', { timeZone })}`
+  } else {
+    const time = format(date, 'HH:mm', { timeZone })
+    
+    const dayNames = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+    const dayOfWeek = dayNames[date.getDay()]
+    
+    return `${dayOfWeek}, ${time}`
+  }
+}
+
+export const formatLastSeenTime = (dateString, userTimezone) => {
+  if (!dateString) return 'никогда'
+  
+  const timeZone = userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone
+  const iso = dateString.endsWith('Z') || dateString.match(/[+-]\d{2}:\d{2}$/)
+    ? dateString
+    : dateString + 'Z'
+  const date = toZonedTime(new Date(iso), timeZone)
+  const now = toZonedTime(new Date(), timeZone)
+  
+  const diffInMinutes = Math.floor((now - date) / (1000 * 60))
+  const diffInHours = Math.floor(diffInMinutes / 60)
+  const diffInDays = Math.floor(diffInHours / 24)
+  
+  if (diffInMinutes < 1) {
+    return 'только что'
+  } else if (diffInMinutes < 60) {
+    return `${diffInMinutes} мин. назад`
+  } else if (diffInHours < 24) {
+    return `${diffInHours} ч. назад`
+  } else if (diffInDays === 1) {
+    return `вчера в ${format(date, 'HH:mm', { timeZone })}`
+  } else if (diffInDays < 7) {
+    const dayNames = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб']
+    const dayOfWeek = dayNames[date.getDay()]
+    return `${dayOfWeek} в ${format(date, 'HH:mm', { timeZone })}`
+  } else {
+    return format(date, 'dd.MM.yyyy в HH:mm', { timeZone })
+  }
+}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { followUser, unfollowUser } from '../../services/userService'
 
-const SubscribeButton = ({ FollowStatus, targetId, onStatusChange }) => {
+const SubscribeButton = ({ FollowStatus, targetId, onStatusChange, onCountersUpdate, onMyCountersUpdate }) => {
     const [loading, setLoading] = useState(false)
     const [status, setStatus] = useState(FollowStatus || 'not_following')
 
@@ -28,12 +28,20 @@ const SubscribeButton = ({ FollowStatus, targetId, onStatusChange }) => {
                 const next = server || (status === 'following_me' ? 'mutual' : 'followed_by_me')
                 setStatus(next)
                 onStatusChange && onStatusChange(next)
+                
+                // Обновляем счетчики: +1 подписчик для целевого пользователя, +1 подписка для текущего
+                onCountersUpdate && onCountersUpdate(1, 1)
+                onMyCountersUpdate && onMyCountersUpdate(0, 1)
             } else {
                 const res = await unfollowUser(targetId)
                 const server = res?.follow_status ?? res?.data?.follow_status ?? res?.result?.follow_status
                 const next = server || (status === 'mutual' ? 'following_me' : 'not_following')
                 setStatus(next)
                 onStatusChange && onStatusChange(next)
+                
+                // Обновляем счетчики: -1 подписчик для целевого пользователя, -1 подписка для текущего
+                onCountersUpdate && onCountersUpdate(-1, -1)
+                onMyCountersUpdate && onMyCountersUpdate(0, -1)
             }
         } catch (e) {
             if (!(e.message && e.message.includes('Ошибка запроса'))) {

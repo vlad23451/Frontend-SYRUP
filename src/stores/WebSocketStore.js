@@ -2,6 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx'
 import MessagesStore from './MessagesStore'
 import NotificationService from '../services/notificationService'
 import { getUserId, getUserLogin } from '../utils/localStorageUtils'
+import UserStatusStore from './UserStatusStore'
 
 class WebSocketStore {
   connection = null
@@ -48,6 +49,23 @@ class WebSocketStore {
         const until = data.until_timestamp ?? data.until
         if (chatId && until) {
           MessagesStore.markOwnMessagesReadUntil(chatId, until, readerUserId)
+          
+          // Обновляем счетчик непрочитанных сообщений
+          import('./ChatStore').then(({ default: ChatStore }) => {
+            // Если это не наш пользователь читает сообщения, обновляем счетчик
+            const currentUserId = getUserId()
+            if (readerUserId && currentUserId && parseInt(readerUserId) !== parseInt(currentUserId)) {
+              // Подсчитываем количество прочитанных сообщений
+              const items = MessagesStore.items || []
+              const readMessages = items.filter(m => 
+                m.chat_id === chatId && 
+                !m.from_me && 
+                m.timestamp && 
+                new Date(m.timestamp) <= new Date(until)
+              )
+              ChatStore.updateUnreadCountFromReadMessages(chatId, readMessages.length)
+            }
+          })
         }
       } catch (e) {
         console.error('Ошибка обработки read/mark_as_read:', e)
@@ -102,7 +120,12 @@ class WebSocketStore {
             console.log('Adding new message:', data.id, 'edited_at:', data.edited_at)
             MessagesStore.addMessage(messageObj)
           }
-        } else {}
+        } else {
+          // Если чат не выбран, увеличиваем счетчик непрочитанных сообщений
+          if (!fromMe) {
+            ChatStore.incrementUnreadCount(data.chat_id)
+          }
+        }
         ChatStore.updateLastMessage(data.chat_id, messageObj)
         
         if (!fromMe) {
@@ -134,6 +157,21 @@ class WebSocketStore {
         })
       } catch (error) {
         console.error('Ошибка редактирования сообщения:', error)
+      }
+    } else if (data.type === 'user_status_changed') {
+      // Обработка изменения статуса пользователя
+      try {
+        const { user_id, is_online, last_seen, timestamp } = data
+        if (user_id) {
+          UserStatusStore.updateUserStatus(user_id, {
+            is_online,
+            last_seen,
+            timestamp
+          })
+          console.log('User status updated:', { user_id, is_online, last_seen })
+        }
+      } catch (error) {
+        console.error('Ошибка обновления статуса пользователя:', error)
       }
     } else {
     }

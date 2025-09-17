@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { formatMessageDateParts } from '../../utils/dateUtils'
+import { formatMessageDateParts, formatHistoryDateTime } from '../../utils/dateUtils'
 
 const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 const MessageItem = ({ message, isOwn, index, onReply, onEdit, onEditById, onDelete, onDeleteById, onCopy, onPin, onForward, onSelect, selected }) => {
-  const { text, file, time, timestamp, edited_at } = message
-  // Используем updated_at если есть (для отредактированных сообщений), иначе timestamp или time
-  const messageTime = edited_at || timestamp || time
+  const { text, file, timestamp, edited_at } = message
+  const messageTime = timestamp
+  const editTime = edited_at
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuPosition, setMenuPosition] = useState({})
   const [isEditing, setIsEditing] = useState(false)
@@ -269,10 +269,13 @@ const MessageItem = ({ message, isOwn, index, onReply, onEdit, onEditById, onDel
             </button>
           </div>
         )}
-        <div className="message-time">
+        <div 
+          className="message-time"
+          title={editTime ? `Отправлено: ${formatHistoryDateTime(messageTime, userTimezone)}\nОтредактировано: ${formatHistoryDateTime(editTime, userTimezone)}` : `Отправлено: ${formatHistoryDateTime(messageTime, userTimezone)}`}
+        >
           {formatMessageDateParts(messageTime, userTimezone).time}
           {edited_at && (
-            <span className="message-edit-indicator" title={`Отредактировано: ${formatMessageDateParts(edited_at, userTimezone).time}`}>
+            <span className="message-edit-indicator">
               (ред.)
             </span>
           )}

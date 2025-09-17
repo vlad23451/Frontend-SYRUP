@@ -1,5 +1,6 @@
 import React from 'react'
 import Avatar from '../ui/Avatar'
+import UserStatus from './UserStatus'
 
 const ChatHeader = ({ selectedChat }) => {
   if (!selectedChat) {
@@ -28,7 +29,7 @@ const ChatHeader = ({ selectedChat }) => {
         />
         <div>
           <div className="chat-user-name">{selectedChat.title || selectedChat.companion_login}</div>
-          <div className="chat-user-status">Онлайн</div>
+          <UserStatus userId={selectedChat.companion_id || selectedChat.companionId || selectedChat.id} />
         </div>
       </div>
     </div>

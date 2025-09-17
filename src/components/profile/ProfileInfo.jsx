@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite'
 
 const ProfileInfo = observer(({ user }) => {
-  if (!user) return null
-  console.log(user)
+  if (!user || !user.user_info) return null
+  
   return (
     <div className="profile-info">
       <h2 className="profile-name">{user.user_info.login}</h2>

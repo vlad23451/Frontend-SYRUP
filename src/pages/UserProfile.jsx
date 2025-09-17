@@ -11,7 +11,7 @@ import SubscribeButton from '../components/profile/SubscribeButton'
 const UserProfile = observer(() => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { userProfile, auth } = useStore()
+  const { userProfile, auth, profile } = useStore()
 
   useEffect(() => {
     if (id) {
@@ -34,6 +34,12 @@ const UserProfile = observer(() => {
 
   const user = userProfile.user
 
+  if (!user) {
+    return <div className="profile-page">
+              <div className="profile-container">Пользователь не найден</div>
+           </div>
+  }
+
   return (
     <div className="page-container">
       <div className="profile-page">
@@ -44,17 +50,31 @@ const UserProfile = observer(() => {
               <ProfileAvatar user={user} isMe={false} />
             </div>
             
-            <UserProfileInfo user={user} />
+            <UserProfileInfo 
+              user={user} 
+              onCountersUpdate={(followersDelta, followingDelta) => {
+                userProfile.updateUserCounters(followersDelta, followingDelta)
+              }}
+              onMyCountersUpdate={(followersDelta, followingDelta) => {
+                profile.updateUserCounters(followersDelta, followingDelta)
+              }}
+            />
             
             <div className="profile-actions" style={{ display:'flex', gap: 12, justifyContent:'center', marginTop: 12 }}>
               <button className="custom-modal-btn" onClick={() => navigate('/messenger')}>
                 Перейти в чат
               </button>
 
-              {user.user_info.follow_status !== 'me' && (auth?.user?.id !== (user?.user_info?.id || user?.id)) && (
+              {user?.user_info?.follow_status !== 'me' && (auth?.user?.id !== (user?.user_info?.id || user?.id)) && (
                 <SubscribeButton
                   FollowStatus={user.user_info.follow_status}
                   targetId={user?.user_info?.id || user?.id}
+                  onCountersUpdate={(followersDelta, followingDelta) => {
+                    userProfile.updateUserCounters(followersDelta, followingDelta)
+                  }}
+                  onMyCountersUpdate={(followersDelta, followingDelta) => {
+                    profile.updateUserCounters(followersDelta, followingDelta)
+                  }}
                 />
               )}
             </div>
@@ -82,9 +102,9 @@ const UserProfile = observer(() => {
                       key={h.id} 
                       history={h}
                       overrideAuthor={{
-                        id: user.user_info.id,
-                        login: user.user_info.login,
-                        avatar: user.avatar_key,
+                        id: user?.user_info?.id,
+                        login: user?.user_info?.login,
+                        avatar: user?.avatar_key,
                       }}
                     />
                   ))}

@@ -10,10 +10,6 @@ const HistoryPreview = ({ history }) => {
   const { openProfileModal } = useProfileModal()
   if (!history) return null
   
-  // Отладочная информация
-  console.log('HistoryPreview - history data:', history)
-  
-  // Более надежная логика определения автора
   const author = history?.author || history?.user || history?.user_info || null
   const authorId = author?.id || history?.author_id || null
   const authorLogin = author?.login || history?.author_login || history?.login || 'Автор'

@@ -22,6 +22,7 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
   const [editingComment, setEditingComment] = useState(null)
   const [editText, setEditText] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [loadingReactions, setLoadingReactions] = useState(new Set())
 
   const endRef = useRef(null)
 
@@ -35,21 +36,23 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
         const commentsData = await getComments(history.id)
         
         const commentsWithReactions = (commentsData || []).map((comment) => {
-          const currentUserLiked = comment.liked_users.some((user) => user.follow_status === 'me') || false
-          const currentUserDisliked = comment.disliked_users.some((user) => user.follow_status === 'me') || false
+          // Ищем текущего пользователя в массиве liked_users
+          const currentUserLike = comment.liked_users.find((user) => user.follow_status === 'me')
+          // Ищем текущего пользователя в массиве disliked_users
+          const currentUserDislike = comment.disliked_users.find((user) => user.follow_status === 'me')
+          
+          // Определяем активное состояние на основе найденных записей
+          const isLikeActive = !!currentUserLike && !!currentUserLike.like_id
+          const isDislikeActive = !!currentUserDislike && !!currentUserDislike.dislike_id
           
           return {
             ...comment,
-            isLikeActive: currentUserLiked,
-            isDislikeActive: currentUserDisliked,
+            isLikeActive,
+            isDislikeActive,
             likeCount: comment.likes || 0,
             dislikeCount: comment.dislikes || 0,
-            likeId: currentUserLiked
-              ? comment.liked_users.find((user) => user.follow_status === 'me')?.like_id || null
-              : null,
-            dislikeId: currentUserDisliked
-              ? comment.disliked_users.find((user) => user.follow_status === 'me')?.dislike_id || null
-              : null,
+            likeId: isLikeActive ? currentUserLike.like_id : null,
+            dislikeId: isDislikeActive ? currentUserDislike.dislike_id : null,
           }
         })
         setComments(commentsWithReactions)
@@ -163,16 +166,30 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
   }
 
   const toggleLike = async (id) => {
+    // Проверяем, не выполняется ли уже запрос для этого комментария
+    if (loadingReactions.has(`like-${id}`)) return
+    
     const comment = comments.find((c) => c.id === id)
     if (!comment) return
+    
     setError(null)
+    
+    // Добавляем ID в набор загружающихся реакций
+    setLoadingReactions(prev => new Set(prev).add(`like-${id}`))
+    
     try {
+      // Используем prevState для безопасного обновления состояния
       if (comment.isLikeActive) {
         await deleteCommentLike(comment.likeId)
         setComments((prev) =>
           prev.map((c) =>
             c.id === id
-              ? { ...c, isLikeActive: false, likeCount: Math.max(0, (c.likeCount || 0) - 1), likeId: null }
+              ? { 
+                  ...c, 
+                  isLikeActive: false, 
+                  likeCount: Math.max(0, (c.likeCount || 0) - 1), 
+                  likeId: null 
+                }
               : c
           )
         )
@@ -197,14 +214,29 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
     } catch (err) {
       console.error('Ошибка при работе с лайком:', err)
       setError('Не удалось обновить лайк')
+    } finally {
+      // Убираем ID из набора загружающихся реакций
+      setLoadingReactions(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(`like-${id}`)
+        return newSet
+      })
     }
   }
 
   const toggleDislike = async (id) => {
+    // Проверяем, не выполняется ли уже запрос для этого комментария
+    if (loadingReactions.has(`dislike-${id}`)) return
+    
     const comment = comments.find((c) => c.id === id)
     if (!comment) return
     setError(null)
+    
+    // Добавляем ID в набор загружающихся реакций
+    setLoadingReactions(prev => new Set(prev).add(`dislike-${id}`))
+    
     try {
+      // Используем prevState для безопасного обновления состояния
       if (comment.isDislikeActive) {
         await deleteCommentDislike(comment.dislikeId)
         setComments((prev) =>
@@ -235,6 +267,13 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
     } catch (err) {
       console.error('Ошибка при работе с дизлайком:', err)
       setError('Не удалось обновить дизлайк')
+    } finally {
+      // Убираем ID из набора загружающихся реакций
+      setLoadingReactions(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(`dislike-${id}`)
+        return newSet
+      })
     }
   }
 
@@ -248,6 +287,7 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
     editingComment,
     editText,
     deleteConfirm,
+    loadingReactions,
     endRef,
     // setters
     setNewComment,

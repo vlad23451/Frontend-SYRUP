@@ -2,6 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx'
 
 import WebSocketStore from './WebSocketStore'
 import ChatStore from './ChatStore'
+import UserStatusStore from './UserStatusStore'
 import { getChatHistory } from '../services/chatService'
 import { getUserId } from '../utils/localStorageUtils'
 
@@ -35,6 +36,21 @@ class MessagesStore {
   _processMessagesData(data) {
     // Если data содержит поле messages, извлекаем его, иначе используем data как массив
     const items = data?.messages || data || []
+    
+    // Извлекаем статус пользователя из данных истории чата
+    if (data?.is_online !== undefined && data?.last_seen !== undefined && data?.user_id) {
+      UserStatusStore.updateUserStatus(data.user_id, {
+        is_online: data.is_online,
+        last_seen: data.last_seen,
+        timestamp: new Date().toISOString()
+      })
+      console.log('User status updated from chat history:', { 
+        user_id: data.user_id, 
+        is_online: data.is_online, 
+        last_seen: data.last_seen 
+      })
+    }
+    
     return items.map(
       (m) => (
         { ...m, id: m.id || `${Date.now()}_${Math.random().toString(36).slice(2,8)}` }
@@ -125,36 +141,72 @@ class MessagesStore {
       const untilMs = Date.parse(untilTimestamp)
       if (Number.isNaN(untilMs)) return
 
+      let readCount = 0
+
       runInAction(() => {
         this.items = (this.items || []).map((m) => {
           if (!m) return m
 
           if (String(m.chat_id) !== String(chatId)) return m
           
-          if (m.from_me !== true) return m
+          // Помечаем как прочитанные входящие сообщения (не от нас)
+          if (m.from_me === true) return m
           
           const timeStr = m.timestamp || m.time
           const t = Date.parse(timeStr)
 
           if (!Number.isNaN(t)) {
-            if (t <= untilMs) return { ...m, is_read: true }
+            if (t <= untilMs) {
+              readCount++
+              return { ...m, is_read: true }
+            }
             return m
           }
           
           if (typeof timeStr === 'string' && typeof untilTimestamp === 'string') {
-            if (timeStr === untilTimestamp) return { ...m, is_read: true }
+            if (timeStr === untilTimestamp) {
+              readCount++
+              return { ...m, is_read: true }
+            }
             
             const norm = (s) => s.replace(/Z$/, '').replace(/\+\d{2}:?\d{2}$/, '').slice(0, 19)
-            if (norm(timeStr) === norm(untilTimestamp)) return { ...m, is_read: true }
+            if (norm(timeStr) === norm(untilTimestamp)) {
+              readCount++
+              return { ...m, is_read: true }
+            }
           }
           return m
         })
       })
+
+      // Обновляем счетчик непрочитанных сообщений в ChatStore
+      if (readCount > 0) {
+        import('./ChatStore').then(({ default: ChatStore }) => {
+          ChatStore.updateUnreadCountFromReadMessages(chatId, readCount)
+        })
+      }
     } catch (error) {console.error(error)}
   }
 
   isNewChat(selectedChat) {
     return !selectedChat || !selectedChat.chat_id
+  }
+
+  // Обновляем счетчик непрочитанных сообщений на основе текущего состояния
+  updateUnreadCountForChat(chatId) {
+    const unreadCount = (this.items || []).filter(m => 
+      m.chat_id === chatId && 
+      !m.from_me && 
+      (m.is_read === false || m.is_read === undefined)
+    ).length
+
+    import('./ChatStore').then(({ default: ChatStore }) => {
+      if (unreadCount === 0) {
+        ChatStore.markChatAsRead(chatId)
+      } else {
+        ChatStore.unreadCounts.set(chatId, unreadCount)
+      }
+    })
   }
 
   async fetchMessages(companionLogin) {

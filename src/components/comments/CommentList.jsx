@@ -1,7 +1,7 @@
 import React from 'react'
 import CommentItem from './CommentItem'
 
-const CommentList = ({ comments, editingComment, editText, setEditText, startEditing, cancelEditing, handleEditComment, toggleLike, toggleDislike, onDelete, endRef, isAuthenticated, isOwnComment }) => {
+const CommentList = ({ comments, editingComment, editText, setEditText, startEditing, cancelEditing, handleEditComment, toggleLike, toggleDislike, onDelete, endRef, isAuthenticated, isOwnComment, loadingReactions }) => {
   if (!comments || comments.length === 0) {
     return (
       <div className="comments-empty">
@@ -27,6 +27,7 @@ const CommentList = ({ comments, editingComment, editText, setEditText, startEdi
           onDelete={onDelete}
           isAuthenticated={isAuthenticated}
           isOwnComment={isOwnComment}
+          loadingReactions={loadingReactions}
         />
       ))}
       <div ref={endRef} />
@@ -35,5 +36,3 @@ const CommentList = ({ comments, editingComment, editText, setEditText, startEdi
 }
 
 export default CommentList
-
-

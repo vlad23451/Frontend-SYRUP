@@ -1,14 +1,3 @@
-/**
- * @fileoverview Компонент для отображения прикрепленных медиа файлов в истории
- * 
- * Функциональность:
- * - Отображение изображений с превью
- * - Встроенный плеер для видео и аудио
- * - Ссылки для скачивания документов
- * - Использует готовые download_url из attached_files
- * - Адаптивная сетка для множественных файлов
- */
-
 import React, { useState, useEffect, useMemo } from 'react'
 
 import { getMediaType, getFileIcon } from '../../services/mediaService'
@@ -24,39 +13,30 @@ const MediaPreview = ({ attachedFiles = [] }) => {
   const [previousVolume, setPreviousVolume] = useState({})
   const [isMuted, setIsMuted] = useState({})
 
-  // Мемоизируем строку IDs для стабильного сравнения
   const attachedFileIds = useMemo(() => {
     return attachedFiles.map(file => file.id).join(',')
   }, [attachedFiles])
 
-  // Используем download_url напрямую из attached_files
   useEffect(() => {
     if (!attachedFiles || attachedFiles.length === 0) {
       setFiles([])
       return
     }
-
-    console.log('📎 Processing attached files:', attachedFiles)
     
-    // Преобразуем файлы в нужный формат
     const processedFiles = attachedFiles.map(file => ({
       ...file,
       name: file.filename || file.name,
       file_type: file.mime_type || file.file_type,
-      // download_url уже есть в файле, просто используем его
       download_url: file.download_url
     }))
     
-    console.log('🔗 Processed files with URLs:', processedFiles)
     setFiles(processedFiles)
   }, [attachedFileIds, attachedFiles])
 
-  // Если изображение не загрузилось - показываем ошибку
   const handleImageError = (file, index) => {
-    console.error('❌ Failed to load image:', file.download_url)
+    console.error('Failed to load image:', file.download_url)
   }
 
-  // Форматирование размера файла
   const formatFileSize = (bytes) => {
     if (!bytes) return ''
     if (bytes === 0) return '0 Bytes'
@@ -66,18 +46,15 @@ const MediaPreview = ({ attachedFiles = [] }) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  // Открытие медиаплеера
   const openMediaPlayer = (fileIndex) => {
     setMediaPlayerIndex(fileIndex)
     setMediaPlayerOpen(true)
   }
 
-  // Закрытие медиаплеера
   const closeMediaPlayer = () => {
     setMediaPlayerOpen(false)
   }
 
-  // Фильтрация файлов для медиаплеера (только медиа файлы)
   const getViewableFiles = () => {
     return files.filter(file => {
       const mediaType = file.mediaType || getMediaType(file.mime_type || file.file_type || '')
@@ -85,7 +62,6 @@ const MediaPreview = ({ attachedFiles = [] }) => {
     })
   }
 
-  // Функция для переключения звука (mute/unmute)
   const toggleMute = (fileId) => {
     const audio = document.querySelector(`audio[data-file-id="${fileId}"]`);
     if (!audio) return;
@@ -93,12 +69,10 @@ const MediaPreview = ({ attachedFiles = [] }) => {
     const currentMuted = isMuted[fileId] || false;
     
     if (currentMuted) {
-      // Включаем звук - восстанавливаем предыдущий уровень
       const savedVolume = previousVolume[fileId] || 0.7;
       audio.volume = savedVolume;
       audio.muted = false;
       
-      // Обновляем ползунок громкости
       const fill = audio.closest('.media-audio').querySelector('.volume-fill');
       const thumb = audio.closest('.media-audio').querySelector('.volume-thumb');
       if (fill && thumb) {
@@ -106,20 +80,16 @@ const MediaPreview = ({ attachedFiles = [] }) => {
         thumb.style.left = `${savedVolume * 100}%`;
       }
       
-      // Обновляем иконку
       updateVolumeIcon(audio, savedVolume);
       
-      // Обновляем состояние
       setIsMuted(prev => ({ ...prev, [fileId]: false }));
     } else {
-      // Отключаем звук - сохраняем текущий уровень
       const currentVolume = audio.volume;
       setPreviousVolume(prev => ({ ...prev, [fileId]: currentVolume }));
       
       audio.volume = 0;
       audio.muted = true;
       
-      // Обновляем ползунок громкости
       const fill = audio.closest('.media-audio').querySelector('.volume-fill');
       const thumb = audio.closest('.media-audio').querySelector('.volume-thumb');
       if (fill && thumb) {
@@ -127,15 +97,12 @@ const MediaPreview = ({ attachedFiles = [] }) => {
         thumb.style.left = '0%';
       }
       
-      // Обновляем иконку
       updateVolumeIcon(audio, 0);
       
-      // Обновляем состояние
       setIsMuted(prev => ({ ...prev, [fileId]: true }));
     }
   };
 
-  // Функция для обновления иконки динамика в зависимости от уровня громкости
   const updateVolumeIcon = (audio, volume) => {
     const volumeIcon = audio.closest('.media-audio').querySelector('.volume-icon svg');
     if (!volumeIcon) return;
@@ -143,28 +110,23 @@ const MediaPreview = ({ attachedFiles = [] }) => {
     const fileId = audio.getAttribute('data-file-id');
     const muted = isMuted[fileId] || false;
     
-    // Очищаем содержимое SVG
     volumeIcon.innerHTML = '';
     
     if (muted || volume === 0) {
-      // Перечеркнутый динамик для отключенного звука или нулевой громкости
       volumeIcon.innerHTML = `
         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <line x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       `;
     } else if (volume < 0.3) {
-      // Тихо - только базовая иконка
       volumeIcon.innerHTML = `
         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       `;
     } else if (volume < 0.7) {
-      // Средне - одна волна
       volumeIcon.innerHTML = `
         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       `;
     } else {
-      // Громко - две волны
       volumeIcon.innerHTML = `
         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -173,28 +135,23 @@ const MediaPreview = ({ attachedFiles = [] }) => {
     }
   };
 
-  // Дополнительная функция для определения типа файла по имени
   const getMediaTypeByName = (fileName) => {
     if (!fileName) return 'other'
     
     const extension = fileName.toLowerCase().split('.').pop()
     
-    // Изображения
     if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'ico'].includes(extension)) {
       return 'image'
     }
     
-    // Видео
     if (['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv', '3gp'].includes(extension)) {
       return 'video'
     }
     
-    // Аудио
     if (['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma', 'm4a'].includes(extension)) {
       return 'audio'
     }
     
-    // Документы
     if (['pdf', 'doc', 'docx', 'txt', 'rtf', 'xls', 'xlsx', 'ppt', 'pptx'].includes(extension)) {
       return 'document'
     }
@@ -202,29 +159,16 @@ const MediaPreview = ({ attachedFiles = [] }) => {
     return 'other'
   }
 
-  // Удалили функцию calculateDynamicSize - теперь используем CSS для адаптивного отображения
-
-  // Рендер одного файла
   const renderMediaFile = (file, index) => {
-    // Определяем тип файла несколькими способами
     let mediaType = file.mediaType || getMediaType(file.mime_type || file.file_type || '')
-    
-    // Если не удалось определить по MIME типу, пробуем по имени файла
+
     if (mediaType === 'other' && (file.name || file.filename)) {
       mediaType = getMediaTypeByName(file.name || file.filename)
     }
     
-    // Если есть download_url, пробуем определить по URL
     if (mediaType === 'other' && file.download_url) {
       mediaType = getMediaTypeByName(file.download_url)
     }
-
-    console.log('🎨 Rendering file:', {
-      id: file.id,
-      name: file.name || file.filename,
-      mediaType,
-      download_url: file.download_url
-    })
     
     switch (mediaType) {
       case 'image':
@@ -235,7 +179,6 @@ const MediaPreview = ({ attachedFiles = [] }) => {
               alt="Фотография" 
               className="media-preview-img"
               onError={() => handleImageError(file, index)}
-              onLoad={() => console.log('✅ Image loaded:', file.download_url)}
               onClick={() => openMediaPlayer(index)}
               loading="lazy"
               style={{ cursor: 'pointer' }}
@@ -278,7 +221,6 @@ const MediaPreview = ({ attachedFiles = [] }) => {
         return (
           <div key={file.id} className="media-preview-item media-audio">
             <div className="audio-player-container">
-              {/* Кнопка воспроизведения */}
               <PlayPauseButton
                 isPlaying={playingStates[file.id] || false}
                 onClick={() => {
@@ -296,7 +238,6 @@ const MediaPreview = ({ attachedFiles = [] }) => {
                 title="Воспроизвести/Пауза"
               />
               
-              {/* Обложка/иконка */}
               <div className="audio-cover">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 18V5l12-2v13"/>
@@ -305,12 +246,10 @@ const MediaPreview = ({ attachedFiles = [] }) => {
                 </svg>
               </div>
               
-              {/* Информация о треке */}
               <div className="audio-info">
                 <div className="audio-title">{file.name || file.filename || 'Аудио файл'}</div>
               </div>
               
-              {/* Иконка динамика */}
               <div className="volume-icon" onClick={() => toggleMute(file.id)} style={{ cursor: 'pointer' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
@@ -318,7 +257,6 @@ const MediaPreview = ({ attachedFiles = [] }) => {
                 </svg>
               </div>
               
-              {/* Полоса громкости */}
               <div className="audio-volume-slider">
                 <div className="volume-container">
                   <div 
@@ -399,7 +337,6 @@ const MediaPreview = ({ attachedFiles = [] }) => {
               </div>
             </div>
             
-            {/* Плеер - только прогресс-бар */}
             <div className="audio-player-controls">
               <audio 
                 data-file-id={file.id}
@@ -407,7 +344,6 @@ const MediaPreview = ({ attachedFiles = [] }) => {
                 controlsList="nodownload"
                 onError={() => handleImageError(file, index)}
                 onLoadedMetadata={(e) => {
-                  // Инициализируем громкость
                   e.target.volume = 0.7;
                   const fill = e.target.closest('.media-audio').querySelector('.volume-fill');
                   const thumb = e.target.closest('.media-audio').querySelector('.volume-thumb');
@@ -416,13 +352,11 @@ const MediaPreview = ({ attachedFiles = [] }) => {
                     thumb.style.left = '70%';
                   }
                   
-                  // Инициализируем прогресс-бар
                   const progressFill = e.target.closest('.media-audio').querySelector('.audio-progress-fill');
                   if (progressFill) {
                     progressFill.style.width = '0%';
                   }
                   
-                  // Инициализируем иконку динамика
                   updateVolumeIcon(e.target, 0.7);
                 }}
                 onPlay={(e) => {
@@ -450,7 +384,6 @@ const MediaPreview = ({ attachedFiles = [] }) => {
                     timeDisplay.textContent = timeString;
                   }
                   
-                  // Обновляем прогресс-бар
                   if (duration > 0) {
                     const progress = (currentTime / duration) * 100;
                     const progressFill = e.target.closest('.media-audio').querySelector('.audio-progress-fill');
@@ -535,7 +468,6 @@ const MediaPreview = ({ attachedFiles = [] }) => {
                   <div className="progress-time" style={{display: 'none'}}>0:00</div>
                 </div>
                 
-                {/* Время воспроизведения справа от прогресс-бара */}
                 <div className="audio-time-display">
                   <span className="audio-current-time">0:00</span>
                 </div>

@@ -4,6 +4,7 @@ import { searchUsers, getFriends, getFollowers } from '../../services/userServic
 import { getUserId } from '../../utils/localStorageUtils'
 import SubscribeButton from '../profile/SubscribeButton'
 import { useProfileModal } from '../../contexts/ProfileModalContext'
+import { useStore } from '../../stores/StoreContext'
 import Avatar from '../ui/Avatar'
 
 const PeopleList = ({ tab, search, userId }) => {
@@ -11,6 +12,7 @@ const PeopleList = ({ tab, search, userId }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const { openProfileModal } = useProfileModal()
+  const { profile } = useStore()
 
   useEffect(() => {
     let ignore = false
@@ -68,6 +70,10 @@ const PeopleList = ({ tab, search, userId }) => {
               <SubscribeButton
                 FollowStatus={user.user_info?.follow_status || user.follow_status}
                 targetId={user.user_info?.id || user.id}
+                onCountersUpdate={() => {}}
+                onMyCountersUpdate={(followersDelta, followingDelta) => {
+                  profile.updateUserCounters(followersDelta, followingDelta)
+                }}
               />
             </div>
           </div>

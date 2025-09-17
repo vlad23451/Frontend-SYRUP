@@ -1,17 +1,10 @@
 import React from 'react'
 
 const CreateHistoryButton = ({ onClick }) => {
-  console.log('CreateHistoryButton received onClick:', typeof onClick)
   
   const handleClick = (e) => {
     e.preventDefault()
-    console.log('Button clicked! Calling onClick...')
-    if (typeof onClick === 'function') {
-      onClick()
-      console.log('onClick called successfully')
-    } else {
-      console.error('onClick is not a function:', onClick)
-    }
+    onClick()
   }
   
   return (
