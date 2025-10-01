@@ -31,20 +31,20 @@ import { apiRequest } from '../utils/apiUtils'
 export const createComment = async (historyId,
                                     content,
                                     commentType = 'text',
-                                    commentMetadata = {}) => {
-  return apiRequest('/comments', {
-    method: 'POST',
-    body: JSON.stringify({
-      history_id: historyId,
-      content,
-      comment_type: commentType,
-      comment_metadata: commentMetadata
+                                      commentMetadata = {}) => {
+    return apiRequest('/comments', {
+      method: 'POST',
+      body: JSON.stringify({
+        history_id: historyId,
+        content,
+        comment_type: commentType,
+        comment_metadata: commentMetadata
+      })
     })
-  })
 }
 
 export const getComments = async (historyId) => {
-  return apiRequest(`/history/id/${historyId}/comments`)
+  return apiRequest(`/history/${historyId}/comments`)
 }
 
 export const deleteComment = async (commentId) => {
@@ -88,5 +88,23 @@ export const deleteCommentDislike = async (dislikeId) => {
   return apiRequest(`/comment-dislikes/${dislikeId}`, {
     method: 'DELETE',
     json: false
+  })
+}
+
+export const addFilesToComment = async (commentId, fileIds) => {
+  return apiRequest(`/comments/${commentId}/files`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      attached_file_ids: fileIds
+    })
+  })
+}
+
+export const replaceCommentFiles = async (commentId, fileIds) => {
+  return apiRequest(`/comments/${commentId}/files`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      attached_file_ids: fileIds
+    })
   })
 }

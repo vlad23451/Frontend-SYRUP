@@ -1,21 +1,35 @@
 import React, { useEffect, useCallback, useRef, useState } from 'react'
 import ModalHeader from '../ui/ModalHeader'
-import { useDraggableModal } from '../../hooks/useDraggableModal'
 import UserProfileInfo from './UserProfileInfo'
 import SubscribeButton from './SubscribeButton'
 import { useStore } from '../../stores/StoreContext'
 import Avatar from '../ui/Avatar'
+import BlockUserModal from '../modals/BlockUserModal'
+import { useUserBlocks } from '../../hooks/useUserBlocks'
 
-const ProfileModal = ({ open, user, loading, error, onClose, onGoToChat, onGoToProfile }) => {
+const ProfileModal = ({ open, user, loading, error, onClose, onGoToChat, onGoToProfile, onGoToFavorites }) => {
   const containerRef = useRef(null)
-  const handleRef = useRef(null)
-  const [dragging, setDragging] = useState(false)
-  const { profile } = useStore()
+  const { profile, auth } = useStore()
+  const [showBlockModal, setShowBlockModal] = useState(false)
+  const { isUserBlocked } = useUserBlocks()
+
+  const isOwnProfile = user?.user_info?.id && auth.user?.user_info?.id && 
+    user.user_info.id === auth.user.user_info.id
+  const isBlocked = isUserBlocked(user?.user_info?.id)
   const handleBackdropClick = useCallback((e) => {
     if (e.target.classList.contains('custom-modal-backdrop')) {
       onClose && onClose()
     }
   }, [onClose])
+
+  const handleBlockUser = useCallback(() => {
+    setShowBlockModal(true)
+  }, [])
+
+  const handleBlockSuccess = useCallback(() => {
+    setShowBlockModal(false)
+    // Можно добавить уведомление об успешной блокировке
+  }, [])
 
   useEffect(() => {
     if (!open) return
@@ -30,7 +44,6 @@ const ProfileModal = ({ open, user, loading, error, onClose, onGoToChat, onGoToP
     }
   }, [open, onClose])
 
-  useDraggableModal(open, containerRef, handleRef)
 
   if (!open) return null
 
@@ -38,8 +51,6 @@ const ProfileModal = ({ open, user, loading, error, onClose, onGoToChat, onGoToP
     <div className="custom-modal-backdrop" onClick={handleBackdropClick}>
       <div className="custom-modal profile-modal" ref={containerRef}>
         <ModalHeader title="Профиль" onClose={onClose} />
-        <div ref={handleRef} className="modal-drag-handle" aria-hidden />
-        <div className="modal-drag-visible" aria-hidden />
 
         {loading && <div className="modal-loading">Загрузка профиля...</div>}
 
@@ -73,7 +84,11 @@ const ProfileModal = ({ open, user, loading, error, onClose, onGoToChat, onGoToP
             </div>
             <div className="custom-modal-actions">
               <button className="custom-modal-btn" onClick={onGoToProfile}>Перейти в профиль</button>
-              <button className="custom-modal-btn confirm" onClick={onGoToChat}>Перейти в чат</button>
+              {isOwnProfile ? (
+                <button className="custom-modal-btn confirm" onClick={onGoToFavorites}>Перейти в избранное</button>
+              ) : (
+                <button className="custom-modal-btn confirm" onClick={onGoToChat}>Перейти в чат</button>
+              )}
               {user.user_info.follow_status !== 'me' && (
                 <SubscribeButton
                   FollowStatus={user.user_info.follow_status}
@@ -84,10 +99,30 @@ const ProfileModal = ({ open, user, loading, error, onClose, onGoToChat, onGoToP
                   }}
                 />
               )}
+              {!isOwnProfile && !isBlocked && (
+                <button 
+                  className="custom-modal-btn danger" 
+                  onClick={handleBlockUser}
+                >
+                  Заблокировать
+                </button>
+              )}
+              {isBlocked && (
+                <div className="blocked-user-notice">
+                  <span>Пользователь заблокирован</span>
+                </div>
+              )}
             </div>
           </>
         )}
       </div>
+      
+      <BlockUserModal
+        isOpen={showBlockModal}
+        onClose={() => setShowBlockModal(false)}
+        user={user}
+        onBlockSuccess={handleBlockSuccess}
+      />
     </div>
   )
 }

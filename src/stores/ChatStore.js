@@ -124,6 +124,7 @@ class ChatStore {
       const updatedItems = [...this.items]
       updatedItems[chatIndex] = updatedChat
       
+      // Перемещаем чат в начало только при новом сообщении
       updatedItems.splice(chatIndex, 1)
       updatedItems.unshift(updatedChat)
       
@@ -132,6 +133,7 @@ class ChatStore {
     } else {
     }
   }
+
 
   async fetchChats() {
     this.setLoading(true)

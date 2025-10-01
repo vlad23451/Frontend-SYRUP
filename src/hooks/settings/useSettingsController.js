@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocalStoragePersist } from '../useLocalStorage'
-import { useDraggableModal } from '../useDraggableModal'
 import { useApplyTheme, useApplyPrimaryColor, useApplyCustomTheme, useApplyTypography, useApplyBackground } from '../useApplyAppearance'
 
 export const useSettingsController = ({ open, onClose, initialTab, singleMode }) => {
   const containerRef = useRef(null)
-  const grabRef = useRef(null)
 
   const [snapEnabled, setSnapEnabled] = useState(() => (localStorage.getItem('dock-snap') ?? 'true') === 'true')
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light')
@@ -132,7 +130,6 @@ export const useSettingsController = ({ open, onClose, initialTab, singleMode })
     return () => window.removeEventListener('keydown', onEsc)
   }, [open, onClose])
 
-  useDraggableModal(open, containerRef, grabRef)
 
   useLocalStoragePersist([
     ['pref-notif-enabled', notifEnabled, String],
@@ -215,7 +212,6 @@ export const useSettingsController = ({ open, onClose, initialTab, singleMode })
   return {
     // refs
     containerRef,
-    grabRef,
     // ui
     activeTab,
     setActiveTab,

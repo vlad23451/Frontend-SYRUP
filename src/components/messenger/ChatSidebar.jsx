@@ -12,7 +12,6 @@ const ChatSidebar = () => {
           <div className="contact-avatar">U</div>
           <div className="contact-info">
             <div className="contact-name">Общий чат</div>
-            <div className="contact-status online">Онлайн</div>
           </div>
         </div>
       </div>

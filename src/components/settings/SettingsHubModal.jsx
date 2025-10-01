@@ -1,11 +1,9 @@
 import React, { useEffect, useRef } from 'react'
 import ModalHeader from '../ui/ModalHeader'
 import { useSettings } from '../../contexts/SettingsContext'
-import { useDraggableModal } from '../../hooks/useDraggableModal'
 
 const SettingsHubModal = ({ open, onClose }) => {
   const containerRef = useRef(null)
-  const grabRef = useRef(null)
   const { openSection } = useSettings()
 
   useEffect(() => {
@@ -15,7 +13,6 @@ const SettingsHubModal = ({ open, onClose }) => {
     return () => window.removeEventListener('keydown', onEsc)
   }, [open, onClose])
 
-  useDraggableModal(open, containerRef, grabRef)
 
   if (!open) return null
 
@@ -52,8 +49,6 @@ const SettingsHubModal = ({ open, onClose }) => {
             ))}
           </div>
         </div>
-        <div className="modal-drag-handle bottom external" ref={grabRef} title="Переместить" style={{ touchAction: 'none' }} />
-        <div className="modal-drag-visible bottom external" />
       </div>
     </div>
   )

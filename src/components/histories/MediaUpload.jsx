@@ -1,15 +1,4 @@
-/**
- * @fileoverview Компонент для загрузки и управления медиа файлами в формах историй
- * 
- * Функциональность:
- * - Выбор файлов через интерфейс прикрепления
- * - Предпросмотр выбранных файлов
- * - Загрузка файлов на сервер 
- * - Управление состоянием загрузки
- * - Удаление файлов из списка
- */
-
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { uploadFile, getMediaType, getFileIcon } from '../../services/mediaService'
 
 const MediaUpload = ({ attachedFiles, onFilesChange, loading: formLoading, error: uploadError, setError }) => {
@@ -21,6 +10,24 @@ const MediaUpload = ({ attachedFiles, onFilesChange, loading: formLoading, error
   const audioInputRef = useRef(null)
   const docsInputRef = useRef(null)
   const otherInputRef = useRef(null)
+  const attachMenuRef = useRef(null)
+
+  // Закрытие меню при клике вне его области
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (attachMenuRef.current && !attachMenuRef.current.contains(event.target)) {
+        setAttachOpen(false)
+      }
+    }
+
+    if (attachOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [attachOpen])
 
   // Открытие файлового пикера
   const openPicker = (ref) => {
@@ -107,13 +114,12 @@ const MediaUpload = ({ attachedFiles, onFilesChange, loading: formLoading, error
             title="Прикрепить"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
-              <circle cx="12" cy="13" r="3"/>
+              <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.64 16.2a2 2 0 0 1-2.83-2.83l8.49-8.49"/>
             </svg>
           </button>
           
           {attachOpen && (
-            <div className="attach-menu" role="menu">
+            <div className="attach-menu" role="menu" ref={attachMenuRef}>
               <button type="button" className="attach-item" onClick={() => openPicker(photoVideoInputRef)} role="menuitem">
                 <span className="attach-ico">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

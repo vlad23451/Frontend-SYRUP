@@ -11,16 +11,18 @@ import './styles/modals.css'
 import './styles/histories.css'
 import './styles/profile.css'
 import './styles/messenger.css'
+import './styles/search.css'
 import './styles/auth.css'
 import './styles/comments.css'
 import './styles/notifications.css'
 import './styles/media-player.css'
+import './styles/mobile.css'
+import './styles/responsive.css'
+import './styles/mobile-fixes.css'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
-  <React.StrictMode>
-    <StoreProvider>
-      <App />
-    </StoreProvider>
-  </React.StrictMode>
+  <StoreProvider>
+    <App />
+  </StoreProvider>
 )

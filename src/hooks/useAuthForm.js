@@ -35,6 +35,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 
 import { login, register } from '../services/authService'
 import { useStore } from '../stores/StoreContext'
+import { useToast } from '../contexts/ToastContext'
 
 export const useAuthForm = (isRegister) => {
   const [loginInput, setLoginInput] = useState('')
@@ -44,6 +45,7 @@ export const useAuthForm = (isRegister) => {
   const navigate = useNavigate()
   const location = useLocation()
   const { auth } = useStore()
+  const { error: showErrorToast } = useToast()
 
   const handleSubmit = async (e, extra = {}) => {
     e.preventDefault()
@@ -84,7 +86,12 @@ export const useAuthForm = (isRegister) => {
       const from = location.state?.from?.pathname || '/'
       navigate(from, { replace: true })
     } catch (error) {
-      setError(error.message)
+      if (error.isLoginError && error.status === 400) {
+        showErrorToast('Неверный логин или пароль', 5000)
+        setError('')
+      } else {
+        setError(error.message)
+      }
     } finally {
       setLoading(false)
     }

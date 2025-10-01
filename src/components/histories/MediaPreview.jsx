@@ -1,17 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react'
 
 import { getMediaType, getFileIcon } from '../../services/mediaService'
-import MediaPlayerModal from '../common/MediaPlayerModal'
+import { useMediaPlayer } from '../../contexts/MediaPlayerContext'
 import PlayPauseButton from '../ui/PlayPauseButton'
 
 const MediaPreview = ({ attachedFiles = [] }) => {
   const [files, setFiles] = useState([])
   const [loading, setLoading] = useState(false)
-  const [mediaPlayerOpen, setMediaPlayerOpen] = useState(false)
-  const [mediaPlayerIndex, setMediaPlayerIndex] = useState(0)
   const [playingStates, setPlayingStates] = useState({})
   const [previousVolume, setPreviousVolume] = useState({})
   const [isMuted, setIsMuted] = useState({})
+  const { openMediaPlayer } = useMediaPlayer()
 
   const attachedFileIds = useMemo(() => {
     return attachedFiles.map(file => file.id).join(',')
@@ -46,13 +45,9 @@ const MediaPreview = ({ attachedFiles = [] }) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  const openMediaPlayer = (fileIndex) => {
-    setMediaPlayerIndex(fileIndex)
-    setMediaPlayerOpen(true)
-  }
-
-  const closeMediaPlayer = () => {
-    setMediaPlayerOpen(false)
+  const handleOpenMediaPlayer = (fileIndex) => {
+    const viewableFiles = getViewableFiles()
+    openMediaPlayer(viewableFiles, fileIndex)
   }
 
   const getViewableFiles = () => {
@@ -179,7 +174,7 @@ const MediaPreview = ({ attachedFiles = [] }) => {
               alt="Фотография" 
               className="media-preview-img"
               onError={() => handleImageError(file, index)}
-              onClick={() => openMediaPlayer(index)}
+              onClick={() => handleOpenMediaPlayer(index)}
               loading="lazy"
               style={{ cursor: 'pointer' }}
               title="Нажмите для просмотра в полном размере"
@@ -193,7 +188,7 @@ const MediaPreview = ({ attachedFiles = [] }) => {
       case 'video':
         return (
           <div key={file.id} className="media-preview-item media-video">
-            <div className="media-preview-video-container" onClick={() => openMediaPlayer(index)}>
+            <div className="media-preview-video-container" onClick={() => handleOpenMediaPlayer(index)}>
               <video 
                 controls 
                 className="media-preview-video"
@@ -534,12 +529,6 @@ const MediaPreview = ({ attachedFiles = [] }) => {
         {files.map((file, index) => renderMediaFile(file, index))}
       </div>
       
-      <MediaPlayerModal
-        isOpen={mediaPlayerOpen}
-        onClose={closeMediaPlayer}
-        files={getViewableFiles()}
-        initialIndex={mediaPlayerIndex}
-      />
     </div>
   )
 }

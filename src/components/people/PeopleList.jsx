@@ -13,6 +13,9 @@ const PeopleList = ({ tab, search, userId }) => {
   const [error, setError] = useState(null)
   const { openProfileModal } = useProfileModal()
   const { profile } = useStore()
+  
+  // Получаем ID текущего пользователя
+  const currentUserId = getUserId()
 
   useEffect(() => {
     let ignore = false
@@ -66,16 +69,19 @@ const PeopleList = ({ tab, search, userId }) => {
               <span className="people-list-login">{user.login}</span>
               {user.name && <span className="people-list-name">{user.name}</span>}
             </div>
-            <div onClick={(e) => e.stopPropagation()}>
-              <SubscribeButton
-                FollowStatus={user.user_info?.follow_status || user.follow_status}
-                targetId={user.user_info?.id || user.id}
-                onCountersUpdate={() => {}}
-                onMyCountersUpdate={(followersDelta, followingDelta) => {
-                  profile.updateUserCounters(followersDelta, followingDelta)
-                }}
-              />
-            </div>
+            {/* Показываем кнопку подписки только если это не наш аккаунт */}
+            {currentUserId && (user.user_info?.id || user.id) !== parseInt(currentUserId) && (
+              <div onClick={(e) => e.stopPropagation()}>
+                <SubscribeButton
+                  FollowStatus={user.user_info?.follow_status || user.follow_status}
+                  targetId={user.user_info?.id || user.id}
+                  onCountersUpdate={() => {}}
+                  onMyCountersUpdate={(followersDelta, followingDelta) => {
+                    profile.updateUserCounters(followersDelta, followingDelta)
+                  }}
+                />
+              </div>
+            )}
           </div>
         ))}
       </div>

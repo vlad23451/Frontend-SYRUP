@@ -16,9 +16,15 @@ const UserProfile = observer(() => {
   useEffect(() => {
     if (id) {
       userProfile.fetchUser(id)
+    }
+  }, [id])
+
+  // Загружаем истории только после получения данных пользователя
+  useEffect(() => {
+    if (id && userProfile.user && userProfile.user.user_info?.follow_status !== 'blocked_me') {
       userProfile.fetchUserHistories(id)
     }
-  }, [id, userProfile])
+  }, [id, userProfile.user])
 
   if (userProfile.loading) {
     return <div className="profile-page">
@@ -60,24 +66,26 @@ const UserProfile = observer(() => {
               }}
             />
             
-            <div className="profile-actions" style={{ display:'flex', gap: 12, justifyContent:'center', marginTop: 12 }}>
-              <button className="custom-modal-btn" onClick={() => navigate('/messenger')}>
-                Перейти в чат
-              </button>
+            {user?.user_info?.follow_status !== 'blocked_me' && (
+              <div className="profile-actions" style={{ display:'flex', gap: 12, justifyContent:'center', marginTop: 12 }}>
+                <button className="custom-modal-btn" onClick={() => navigate('/messenger')}>
+                  Перейти в чат
+                </button>
 
-              {user?.user_info?.follow_status !== 'me' && (auth?.user?.id !== (user?.user_info?.id || user?.id)) && (
-                <SubscribeButton
-                  FollowStatus={user.user_info.follow_status}
-                  targetId={user?.user_info?.id || user?.id}
-                  onCountersUpdate={(followersDelta, followingDelta) => {
-                    userProfile.updateUserCounters(followersDelta, followingDelta)
-                  }}
-                  onMyCountersUpdate={(followersDelta, followingDelta) => {
-                    profile.updateUserCounters(followersDelta, followingDelta)
-                  }}
-                />
-              )}
-            </div>
+                {user?.user_info?.follow_status !== 'me' && (auth?.user?.id !== (user?.user_info?.id || user?.id)) && (
+                  <SubscribeButton
+                    FollowStatus={user.user_info.follow_status}
+                    targetId={user?.user_info?.id || user?.id}
+                    onCountersUpdate={(followersDelta, followingDelta) => {
+                      userProfile.updateUserCounters(followersDelta, followingDelta)
+                    }}
+                    onMyCountersUpdate={(followersDelta, followingDelta) => {
+                      profile.updateUserCounters(followersDelta, followingDelta)
+                    }}
+                  />
+                )}
+              </div>
+            )}
 
           </div>
           <div className="profile-content">
@@ -86,7 +94,14 @@ const UserProfile = observer(() => {
               <div className="user-histories-header">
                 <h3 className="text-primary">Истории пользователя</h3>
               </div>
-              {userProfile.historiesLoading ? (
+              
+              {user?.user_info?.follow_status === 'blocked_me' ? (
+                <div className="blocked-state">
+                  <div className="blocked-icon">🚫</div>
+                  <h4 className="blocked-title">Пользователь заблокировал вас</h4>
+                  <p className="blocked-text">Вы не можете просматривать истории этого пользователя</p>
+                </div>
+              ) : userProfile.historiesLoading ? (
                 <div>Загрузка историй...</div>
               ) : userProfile.historiesError ? (
                 <div>Ошибка: {userProfile.historiesError}</div>

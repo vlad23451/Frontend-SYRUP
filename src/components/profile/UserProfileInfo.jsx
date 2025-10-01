@@ -2,23 +2,52 @@ import React, { useCallback, useState } from 'react'
 import { observer } from 'mobx-react-lite'
 import UsersListModal from './UsersListModal'
 import SubscribeButton from './SubscribeButton'
-import { getFriends, getFollowers, getFollowing } from '../../services/userService'
+import { getFriends, getFollowers, getFollowing, searchUsersWithFilters } from '../../services/userService'
 import { useProfileModal } from '../../contexts/ProfileModalContext'
 
 const UserProfileInfo = observer(({ user, onCountersUpdate, onMyCountersUpdate }) => {
   const { openProfileModal } = useProfileModal()
-  const [modal, setModal] = useState({ open: false, title: '', loading: false, error: null, users: [] })
+  const [modal, setModal] = useState({ open: false, title: '', loading: false, error: null, users: [], searchType: null })
 
   const openModal = useCallback(async (type) => {
     const uid = user?.user_info?.id || user?.id
     if (!uid) return
     const title = type === 'friends' ? 'Друзья' : type === 'followers' ? 'Подписчики' : 'Подписки'
-    setModal({ open: true, title, loading: true, error: null, users: [] })
+    setModal({ open: true, title, loading: true, error: null, users: [], searchType: type })
     try {
       const users = type === 'friends' ? await getFriends(uid) : type === 'followers' ? await getFollowers(uid) : await getFollowing(uid)
-      setModal({ open: true, title, loading: false, error: null, users })
+      setModal({ open: true, title, loading: false, error: null, users, searchType: type })
     } catch (e) {
-      setModal({ open: true, title, loading: false, error: e.message, users: [] })
+      setModal({ open: true, title, loading: false, error: e.message, users: [], searchType: type })
+    }
+  }, [user])
+
+  const handleSearch = useCallback(async (query, searchType) => {
+    if (!query.trim()) {
+      // Если поиск пустой, загружаем полный список
+      const uid = user?.user_info?.id || user?.id
+      if (!uid) return
+      setModal(prev => ({ ...prev, loading: true, error: null }))
+      try {
+        const users = searchType === 'friends' ? await getFriends(uid) : searchType === 'followers' ? await getFollowers(uid) : await getFollowing(uid)
+        setModal(prev => ({ ...prev, loading: false, error: null, users }))
+      } catch (e) {
+        setModal(prev => ({ ...prev, loading: false, error: e.message, users: [] }))
+      }
+      return
+    }
+
+    setModal(prev => ({ ...prev, loading: true, error: null }))
+    try {
+      const filters = {}
+      if (searchType === 'friends') filters.friends = true
+      else if (searchType === 'followers') filters.followers = true
+      else if (searchType === 'following') filters.following = true
+      
+      const users = await searchUsersWithFilters(query, filters)
+      setModal(prev => ({ ...prev, loading: false, error: null, users }))
+    } catch (e) {
+      setModal(prev => ({ ...prev, loading: false, error: e.message, users: [] }))
     }
   }, [user])
 
@@ -43,10 +72,6 @@ const UserProfileInfo = observer(({ user, onCountersUpdate, onMyCountersUpdate }
           <span className="stat-number">{user.following ?? 0}</span>
           <span className="stat-label">Подписки</span>
         </button>
-        <div className="stat-item">
-          <span className="stat-number">{user.histories}</span>
-          <span className="stat-label">Истории</span>
-        </div>
       </div>
       <UsersListModal
         open={modal.open}
@@ -55,6 +80,8 @@ const UserProfileInfo = observer(({ user, onCountersUpdate, onMyCountersUpdate }
         loading={modal.loading}
         error={modal.error}
         onClose={closeModal}
+        onSearch={handleSearch}
+        searchType={modal.searchType}
         onUserClick={(u) => {
           const userId = u.user_info?.id || u.id
           closeModal()

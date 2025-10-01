@@ -20,7 +20,7 @@ import { IconNews,
          IconBack,
          IconFollowing } from '../../components/ui/icons/DockIcons'
 
-export const useDockItems = ({ isPeople, searchValue }) => {
+export const useDockItems = ({ isPeople }) => {
   const { auth } = useStore()
   const location = useLocation()
   const navigate = useNavigate()
@@ -35,11 +35,11 @@ export const useDockItems = ({ isPeople, searchValue }) => {
             label: 'Назад',
             Icon: IconBack },
 
-          { to: `/people?tab=all&q=${encodeURIComponent(searchValue)}`,
+          { to: '/people?tab=all',
             label: 'Все',
             Icon: IconUsers },
 
-          { to: `/people?tab=friends&q=${encodeURIComponent(searchValue)}`,
+          { to: '/people?tab=friends',
             label: 'Друзья',
             Icon: IconUsers },
         ]
@@ -58,7 +58,7 @@ export const useDockItems = ({ isPeople, searchValue }) => {
       { to: '/login', label: 'Войти', Icon: IconLogin },
       { to: '/register', label: 'Регистрация', Icon: IconRegister },
     ]
-  }, [auth.isAuthenticated, isPeople, searchValue, location.pathname])
+  }, [auth.isAuthenticated, isPeople, location.pathname])
 
   const isActivePath = (to) => (to === '/'
                                 ? location.pathname === '/'
@@ -74,7 +74,7 @@ export const useDockItems = ({ isPeople, searchValue }) => {
     if (isPeople && (label === 'Все' || label === 'Друзья')) {
       e.preventDefault()
       const tab = label === 'Все' ? 'all' : 'friends'
-      navigate(`/people?tab=${tab}&q=${encodeURIComponent(searchValue)}`)
+      navigate(`/people?tab=${tab}`)
       return
     }
   }

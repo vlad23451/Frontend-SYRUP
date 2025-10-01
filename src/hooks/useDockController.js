@@ -5,8 +5,8 @@ import { useDockItems } from './dock/useDockItems'
 export const useDockController = () => {
 
   const { dockRef, innerRef, handleRef, styleDock } = useDockPosition()
-  const { isPeople, currentTab, searchValue, setSearchValue } = useDockSearch()
-  const { items, isActivePath, handleItemClick, isAuthenticated, isFollowingPage } = useDockItems({ isPeople, searchValue })
+  const { isPeople, currentTab } = useDockSearch()
+  const { items, isActivePath, handleItemClick, isAuthenticated, isFollowingPage } = useDockItems({ isPeople })
 
   const showBackButton = Boolean(window.__settingsSectionOpen)
   const openSettings = () => window.dispatchEvent(new Event('open-settings'))
@@ -20,9 +20,7 @@ export const useDockController = () => {
     isActivePath,
     isPeople,
     isAuthenticated,
-    searchValue,
     currentTab,
-    setSearchValue,
     handleItemClick,
     showBackButton,
     openSettings,

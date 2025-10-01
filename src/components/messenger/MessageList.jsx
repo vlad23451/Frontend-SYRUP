@@ -1,13 +1,8 @@
-import React, { useRef, useEffect } from 'react'
+import React from 'react'
 import MessageItem from './MessageItem'
 import { formatMessageDateParts } from '../../utils/dateUtils'
 
-const MessageList = ({ messages, username, onDeleteAt, onDeleteById, onEditById, onReply, onSelectToggle, selectedIndices = [] }) => {
-  const messagesEndRef = useRef(null)
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+const MessageList = React.forwardRef(({ messages, username, onDeleteAt, onDeleteById, onEditById, onReply, onPin, onSelectToggle, selectedIndices = [] }, ref) => {
 
   const groups = (() => {
     const map = new Map()
@@ -21,38 +16,49 @@ const MessageList = ({ messages, username, onDeleteAt, onDeleteById, onEditById,
   })()
 
   return (
-    <div className="messages-list">
+    <div 
+      ref={ref}
+      className="messages-list" 
+      style={{ 
+        display: 'flex',
+        flexDirection: 'column-reverse',
+        height: '100%',
+        overflowY: 'auto',
+        paddingRight: '5px' // Смещаем скроллбар вправо
+      }}
+    >
       {groups.length === 0 && (
         <div className="messages-list-empty">
           <p>Нет сообщений</p>
           <p>Начните общение прямо сейчас!</p>
         </div>
       )}
-      {groups.map(([label, msgs]) => (
+      {/* Разворачиваем группы и сообщения для корректного отображения снизу вверх */}
+      {[...groups].reverse().map(([label, msgs]) => (
         <React.Fragment key={label}>
-          <div className="messages-date-separator">{label}</div>
-          {msgs.map((msg, idx) => (
+          {/* Разворачиваем сообщения в группе */}
+          {[...msgs].reverse().map((msg, idx) => (
             <MessageItem
-              key={`${label}-${idx}`}
-              index={idx}
+              key={`${label}-${msgs.length - 1 - idx}`}
+              index={msgs.length - 1 - idx}
               message={msg}
               isOwn={msg.from_me}
               onReply={(_, m) => { onReply?.(m) }}
               onCopy={() => { try { navigator.clipboard.writeText(msg.text || '') } catch {} }}
               onEdit={() => { /* TODO: открыть инлайн-редактор */ }}
               onEditById={onEditById}
-              onDelete={() => { onDeleteAt?.(idx) }}
+              onDelete={() => { onDeleteAt?.(msgs.length - 1 - idx) }}
               onDeleteById={onDeleteById}
-              onSelect={() => onSelectToggle?.(idx)}
-              selected={selectedIndices.includes(idx)}
-              onPin={(_, m) => onSelectToggle?.(idx)}
+              onSelect={() => onSelectToggle?.(msgs.length - 1 - idx)}
+              selected={selectedIndices.includes(msgs.length - 1 - idx)}
+              onPin={(_, m) => onPin?.(m)}
             />
           ))}
+          <div className="messages-date-separator">{label}</div>
         </React.Fragment>
       ))}
-      <div ref={messagesEndRef} />
     </div>
   )
-}
+})
 
 export default MessageList

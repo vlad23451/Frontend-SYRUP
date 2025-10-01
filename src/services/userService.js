@@ -52,6 +52,17 @@ export const searchUsers = async (query) => {
   return apiRequest(`/user/search${params}`)
 }
 
+export const searchUsersWithFilters = async (query, filters = {}) => {
+  const searchParams = new URLSearchParams()
+  if (query) searchParams.append('q', query)
+  if (filters.friends) searchParams.append('friends', 'true')
+  if (filters.followers) searchParams.append('followers', 'true')
+  if (filters.following) searchParams.append('following', 'true')
+  
+  const params = searchParams.toString()
+  return apiRequest(`/user/search${params ? `?${params}` : ''}`)
+}
+
 export const getFriends = async (userId) => {
   return apiRequest(`/friends/${userId}`)
 }
@@ -62,4 +73,21 @@ export const getFollowers = async (userId) => {
 
 export const getFollowing = async (userId) => {
   return apiRequest(`/followers/following/${userId}`)
+}
+
+export const updateProfileAbout = async (about) => {
+  return apiRequest('/user/me', {
+    method: 'PATCH',
+    body: JSON.stringify({ about })
+  })
+}
+
+export const changePassword = async (oldPassword, newPassword) => {
+  return apiRequest('/user/me/password', {
+    method: 'PATCH',
+    body: JSON.stringify({ 
+      old_password: oldPassword,
+      new_password: newPassword
+    })
+  })
 }

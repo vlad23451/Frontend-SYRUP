@@ -1,10 +1,26 @@
 import { useProfile } from '../../hooks/useProfile'
 import { useProfileModal } from '../../contexts/ProfileModalContext'
 import Avatar from '../ui/Avatar'
+import HistoryActionsDropdown from './HistoryActionsDropdown'
+import FavoriteButton from './FavoriteButton'
 
-const HistoryHeader = ({ history, forceMeAsAuthor = false, overrideAuthor }) => {
+const HistoryHeader = ({ 
+  history, 
+  forceMeAsAuthor = false, 
+  overrideAuthor, 
+  onEdit, 
+  onDelete, 
+  onEditAttachments,
+  isDeleting = false, 
+  isOwner = false 
+}) => {
   const { getAuthorInfo } = useProfile()
   const { openProfileModal } = useProfileModal()
+
+  if (!history) {
+    return null
+  }
+  
   const { displayLogin, displayAvatar, targetUserId } = getAuthorInfo(history, {
     forceMeAsAuthor,
     overrideAuthorId: overrideAuthor?.id,
@@ -33,6 +49,17 @@ const HistoryHeader = ({ history, forceMeAsAuthor = false, overrideAuthor }) => 
             className="author-avatar-top"
           />
           <span className="author-login-top">{displayLogin}</span>
+        </div>
+        <div className="history-card-actions-top">
+          <FavoriteButton historyId={history.id} />
+          <HistoryActionsDropdown
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onEditAttachments={onEditAttachments}
+            history={history}
+            isDeleting={isDeleting}
+            isOwner={isOwner}
+          />
         </div>
       </div>
       <div className="history-title-row">

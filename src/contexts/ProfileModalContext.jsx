@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getUserById } from '../services/userService'
+import { useStore } from '../stores/StoreContext'
 
 const ProfileModalContext = createContext({})
 
@@ -12,6 +13,7 @@ export const ProfileModalProvider = ({ children }) => {
     error: null
   })
   const navigate = useNavigate()
+  const { auth } = useStore()
 
   const openProfileModal = useCallback(async (userId) => {
     if (!userId) return
@@ -39,11 +41,23 @@ export const ProfileModalProvider = ({ children }) => {
 
   const handleGoToProfile = useCallback(() => {
     const userId = modalState.user?.user_info?.id || modalState.user?.id
+    const currentUserId = auth.user?.user_info?.id
+    
     if (userId) {
-      navigate(`/profile/${encodeURIComponent(userId)}`)
+      // Если это профиль текущего пользователя, переходим на /profile/ без ID
+      if (currentUserId && userId === currentUserId) {
+        navigate('/profile/')
+      } else {
+        navigate(`/profile/${encodeURIComponent(userId)}`)
+      }
       closeProfileModal()
     }
-  }, [modalState.user, navigate, closeProfileModal])
+  }, [modalState.user, navigate, closeProfileModal, auth.user])
+
+  const handleGoToFavorites = useCallback(() => {
+    navigate('/favorites')
+    closeProfileModal()
+  }, [navigate, closeProfileModal])
 
   return (
     <ProfileModalContext.Provider 
@@ -52,7 +66,8 @@ export const ProfileModalProvider = ({ children }) => {
         openProfileModal,
         closeProfileModal,
         handleGoToChat,
-        handleGoToProfile
+        handleGoToProfile,
+        handleGoToFavorites
       }}
     >
       {children}

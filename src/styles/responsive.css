@@ -1,0 +1,356 @@
+/**
+ * Адаптивные утилиты и общие стили для мобильных устройств
+ * Обеспечивает корректное отображение на всех размерах экранов
+ */
+
+/* Глобальные стили для предотвращения выхода за края */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  margin: 0;
+  padding: 0;
+}
+
+/* Дополнительная защита от горизонтального скролла */
+@media (max-width: 768px) {
+  html {
+    overflow-x: hidden !important;
+  }
+  
+  body {
+    overflow-x: hidden !important;
+    position: relative;
+  }
+  
+  /* Убираем горизонтальный скролл для всех элементов */
+  .main-container,
+  .page-container,
+  .histories-container,
+  .profile-page,
+  .messenger-page,
+  .messenger-container {
+    overflow-x: hidden !important;
+  }
+}
+
+/* Принудительное ограничение ширины для всех элементов */
+@media (max-width: 768px) {
+  * {
+    max-width: 100vw !important;
+  }
+  
+  /* Специальные исключения для элементов, которые должны быть шире */
+  .mobile-bottom-panel,
+  .messenger-container,
+  .custom-modal-backdrop {
+    max-width: none !important;
+  }
+}
+
+/* Общие адаптивные стили */
+@media (max-width: 768px) {
+  /* Скрытие элементов на мобильных */
+  .desktop-only {
+    display: none !important;
+  }
+  
+  /* Показ элементов только на мобильных */
+  .mobile-only {
+    display: block !important;
+  }
+  
+  /* Адаптивные отступы */
+  .responsive-padding {
+    padding: 12px 8px !important;
+  }
+  
+  /* Предотвращение выхода за края */
+  * {
+    box-sizing: border-box !important;
+  }
+  
+  body {
+    overflow-x: hidden !important;
+  }
+  
+  /* Ограничение ширины для всех контейнеров */
+  .main-container,
+  .page-container,
+  .histories-container,
+  .profile-page,
+  .form-container {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Адаптивные размеры шрифтов */
+  .responsive-text {
+    font-size: 0.9em !important;
+  }
+  
+  /* Адаптивные кнопки */
+  .responsive-btn {
+    padding: 12px 16px !important;
+    font-size: 0.95em !important;
+    min-height: 44px !important; /* Минимальный размер для касания */
+  }
+  
+  /* Адаптивные формы */
+  .responsive-form {
+    padding: 16px !important;
+  }
+  
+  .responsive-form .form-group {
+    margin-bottom: 16px !important;
+  }
+  
+  .responsive-form .form-input {
+    padding: 12px !important;
+    font-size: 16px !important; /* Предотвращает зум на iOS */
+  }
+  
+  /* Адаптивные модальные окна */
+  .responsive-modal {
+    margin: 8px !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100vh - 16px) !important;
+  }
+  
+  /* Адаптивные карточки */
+  .responsive-card {
+    padding: 12px !important;
+    margin-bottom: 12px !important;
+  }
+  
+  /* Адаптивные сетки */
+  .responsive-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  /* Адаптивные флекс-контейнеры */
+  .responsive-flex {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  
+  /* Адаптивные заголовки */
+  .responsive-title {
+    font-size: 1.5em !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .responsive-subtitle {
+    font-size: 1.2em !important;
+    margin-bottom: 12px !important;
+  }
+}
+
+/* Стили для очень маленьких экранов */
+@media (max-width: 480px) {
+  .responsive-padding {
+    padding: 8px 4px !important;
+  }
+  
+  .responsive-text {
+    font-size: 0.85em !important;
+  }
+  
+  .responsive-btn {
+    padding: 10px 12px !important;
+    font-size: 0.9em !important;
+  }
+  
+  .responsive-title {
+    font-size: 1.3em !important;
+  }
+  
+  .responsive-subtitle {
+    font-size: 1.1em !important;
+  }
+}
+
+/* Стили для больших экранов */
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+  
+  .desktop-only {
+    display: block !important;
+  }
+}
+
+/* Адаптивные утилиты для скрытия/показа */
+.hide-mobile {
+  display: block;
+}
+
+.show-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+  
+  .show-mobile {
+    display: block !important;
+  }
+}
+
+/* Адаптивные утилиты для текста */
+.text-responsive {
+  font-size: 1em;
+}
+
+@media (max-width: 768px) {
+  .text-responsive {
+    font-size: 0.9em;
+  }
+}
+
+@media (max-width: 480px) {
+  .text-responsive {
+    font-size: 0.85em;
+  }
+}
+
+/* Адаптивные утилиты для отступов */
+.p-responsive {
+  padding: 16px;
+}
+
+@media (max-width: 768px) {
+  .p-responsive {
+    padding: 12px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .p-responsive {
+    padding: 8px 4px;
+  }
+}
+
+/* Адаптивные утилиты для маржинов */
+.m-responsive {
+  margin: 16px;
+}
+
+@media (max-width: 768px) {
+  .m-responsive {
+    margin: 12px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .m-responsive {
+    margin: 8px 4px;
+  }
+}
+
+/* Адаптивные утилиты для ширины */
+.w-responsive {
+  width: 100%;
+  max-width: 1200px;
+}
+
+@media (max-width: 768px) {
+  .w-responsive {
+    max-width: 100%;
+  }
+}
+
+/* Адаптивные утилиты для высоты */
+.h-responsive {
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .h-responsive {
+    min-height: calc(100vh - 80px); /* Учитываем мобильную панель */
+  }
+}
+
+/* Адаптивные компоненты */
+.responsive-container {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.responsive-btn {
+  transition: all var(--transition);
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border: none;
+  outline: none;
+}
+
+.responsive-btn:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.responsive-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.responsive-grid {
+  display: grid;
+  gap: 16px;
+}
+
+/* Адаптивность для сеток */
+@media (max-width: 768px) {
+  .responsive-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+}
+
+/* Адаптивность для кнопок */
+@media (max-width: 768px) {
+  .responsive-btn {
+    min-height: 44px !important;
+    padding: 12px 16px !important;
+    font-size: 0.95em !important;
+  }
+}
+
+/* Адаптивность для контейнеров */
+@media (max-width: 768px) {
+  .responsive-container {
+    padding: 12px 8px !important;
+  }
+}
+
+/* Предотвращение выхода текста за края */
+@media (max-width: 768px) {
+  p, h1, h2, h3, h4, h5, h6, span, div {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    hyphens: auto !important;
+    max-width: 100% !important;
+  }
+  
+  /* Специально для длинных слов */
+  .history-card,
+  .profile-header,
+  .custom-modal-content {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+}

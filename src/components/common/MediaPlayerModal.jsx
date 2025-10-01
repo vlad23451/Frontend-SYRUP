@@ -24,6 +24,8 @@ const MediaPlayerModal = ({
   const [scale, setScale] = useState(1)
   const [showInfo, setShowInfo] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
+  const [volume, setVolume] = useState(0.7)
   const modalRef = useRef(null)
   const imageRef = useRef(null)
   const touchStartRef = useRef({ x: 0, y: 0 })
@@ -183,12 +185,99 @@ const MediaPlayerModal = ({
     }
   }
 
+  // Управление звуком
+  const toggleMute = useCallback(() => {
+    const audio = modalRef.current?.querySelector('audio')
+    if (audio) {
+      setIsMuted(prevMuted => {
+        const newMuted = !prevMuted
+        console.log('Toggle mute - prevMuted:', prevMuted, 'newMuted:', newMuted, 'volume:', volume)
+        if (newMuted) {
+          audio.muted = true
+        } else {
+          audio.muted = false
+          audio.volume = volume
+        }
+        return newMuted
+      })
+    }
+  }, [volume])
+
+  const handleVolumeChange = useCallback((newVolume) => {
+    const audio = modalRef.current?.querySelector('audio')
+    if (audio) {
+      audio.volume = newVolume
+      setVolume(newVolume)
+      if (newVolume > 0 && isMuted) {
+        setIsMuted(false)
+        audio.muted = false
+      }
+    }
+  }, [isMuted])
+
+  // Получение иконки звука
+  const getVolumeIcon = () => {
+    // Приоритет: если звук выключен (muted), всегда показываем перечеркнутую иконку
+    if (isMuted) {
+      return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <line x1="23" y1="9" x2="17" y2="15"/>
+          <line x1="17" y1="9" x2="23" y2="15"/>
+        </svg>
+      )
+    }
+    
+    // Если звук включен, показываем иконку в зависимости от уровня громкости
+    if (volume === 0) {
+      return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+        </svg>
+      )
+    } else if (volume < 0.3) {
+      return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+        </svg>
+      )
+    } else if (volume < 0.7) {
+      return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+      )
+    } else {
+      return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+      )
+    }
+  }
+
+  // Инициализация аудио элемента
+  useEffect(() => {
+    if (isOpen && getFileMediaType(currentFile) === 'audio') {
+      const audio = modalRef.current?.querySelector('audio')
+      if (audio) {
+        audio.volume = volume
+        audio.muted = isMuted
+        console.log('Audio initialized - volume:', volume, 'muted:', isMuted)
+      }
+    }
+  }, [isOpen, currentFile, volume, isMuted])
+
   // Сброс состояния при закрытии
   useEffect(() => {
     if (!isOpen) {
       setScale(1)
       setShowInfo(false)
       setShowControls(true)
+      setIsMuted(false)
+      setVolume(0.7)
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current)
       }
@@ -247,8 +336,9 @@ const MediaPlayerModal = ({
             </div>
             <audio
               className="media-player-audio"
-              controls
               autoPlay
+              volume={volume}
+              muted={isMuted}
               onLoadedData={() => setIsLoading(false)}
               onError={() => setIsLoading(false)}
             >
@@ -399,6 +489,36 @@ const MediaPlayerModal = ({
                   <path d="M3 21v-5h5"/>
                 </svg>
               </button>
+            </div>
+          )}
+
+          {/* Контролы звука для аудио */}
+          {getFileMediaType(currentFile) === 'audio' && (
+            <div className="media-player-audio-controls">
+              <button
+                className="media-player-btn"
+                onClick={() => {
+                  console.log('Before toggle - isMuted:', isMuted, 'volume:', volume)
+                  toggleMute()
+                }}
+                title={isMuted ? "Включить звук" : "Выключить звук"}
+              >
+                {getVolumeIcon()}
+              </button>
+              <div className="media-player-volume-slider">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={isMuted ? 0 : volume}
+                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                  className="media-player-volume-input"
+                />
+                <span className="media-player-volume-level">
+                  {Math.round((isMuted ? 0 : volume) * 100)}%
+                </span>
+              </div>
             </div>
           )}
         </div>

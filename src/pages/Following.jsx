@@ -25,10 +25,6 @@ const Following = observer(() => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  /**
-   * Загружает ленту в зависимости от выбранной вкладки.
-   * При tab=friends — только истории друзей, иначе — истории подписок.
-   */
   const loadFeed = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -39,6 +35,9 @@ const Following = observer(() => {
       const data = isFriends
         ? await getFriendsHistories(0, 10)
         : await getFollowingHistories(0, 10)
+      
+      // Синхронизация избранного происходит автоматически при загрузке приложения
+      
       setHistories(Array.isArray(data) ? data : (data?.items || []))
     } catch (e) {
       setError(e?.message || 'Не удалось загрузить ленту подписок')
@@ -47,7 +46,7 @@ const Following = observer(() => {
     }
   }, [auth?.isAuthenticated, location.search])
 
-  useEffect(() => { loadFeed() }, [loadFeed])
+  useEffect(() => { loadFeed() }, [auth?.isAuthenticated, location.search])
 
   if (error) {
     return <div className="error">Ошибка: {error}</div>

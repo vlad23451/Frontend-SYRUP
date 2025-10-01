@@ -1,28 +1,28 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { formatMessageDateParts, formatHistoryDateTime } from '../../utils/dateUtils'
+import ContextMenu from '../ui/ContextMenu'
+import ContextMenuItem from '../ui/ContextMenuItem'
+import { useContextMenu } from '../../hooks/useContextMenu'
+import MediaPreviewAdapter from './MediaPreviewAdapter'
 
 const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 const MessageItem = ({ message, isOwn, index, onReply, onEdit, onEditById, onDelete, onDeleteById, onCopy, onPin, onForward, onSelect, selected }) => {
-  const { text, file, timestamp, edited_at } = message
+  const { text, file, files, attached_files, timestamp, edited_at } = message
   const messageTime = timestamp
   const editTime = edited_at
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [menuPosition, setMenuPosition] = useState({})
   const [isEditing, setIsEditing] = useState(false)
   const [editText, setEditText] = useState(text || '')
-  const menuRef = useRef(null)
   const messageRef = useRef(null)
   const editInputRef = useRef(null)
-
-  useEffect(() => {
-    if (!menuOpen) return
-    const onDocClick = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false)
-    }
-    window.addEventListener('mousedown', onDocClick)
-    return () => window.removeEventListener('mousedown', onDocClick)
-  }, [menuOpen])
+  
+  // Контекстное меню
+  const menuId = `message-${message.id || index}`
+  const { isOpen: contextMenuOpen,
+          position: contextMenuPosition,
+          openMenu: openContextMenu,
+          closeMenu: closeContextMenu
+        } = useContextMenu(menuId)
 
   useEffect(() => {
     if (isEditing && editInputRef.current) {
@@ -31,85 +31,10 @@ const MessageItem = ({ message, isOwn, index, onReply, onEdit, onEditById, onDel
     }
   }, [isEditing])
 
-  useEffect(() => {
-    if (!menuOpen || !menuRef.current || !messageRef.current) return
-
-    const positionMenu = () => {
-      const menu = menuRef.current
-      const message = messageRef.current
-      const container = message.closest('.messages-container')
-      
-      if (!menu || !message || !container) return
-
-      // Сначала показываем меню в стандартной позиции для расчета размеров
-      menu.style.visibility = 'hidden'
-      menu.style.display = 'block'
-      
-      const menuRect = menu.getBoundingClientRect()
-      const messageRect = message.getBoundingClientRect()
-      const containerRect = container.getBoundingClientRect()
-      const viewportHeight = window.innerHeight
-      
-      let top = -4
-      let right = -4
-      let left = 'auto'
-      
-      // Проверяем, помещается ли меню снизу в контейнере
-      const spaceBelowInContainer = containerRect.bottom - messageRect.bottom
-      const spaceAboveInContainer = messageRect.top - containerRect.top
-      const menuHeight = menuRect.height || 200
-      
-      // Проверяем, помещается ли меню снизу в viewport
-      const spaceBelowInViewport = viewportHeight - messageRect.bottom
-      const spaceAboveInViewport = messageRect.top
-      
-      // Если не помещается снизу ни в контейнере, ни в viewport, показываем сверху
-      if ((spaceBelowInContainer < menuHeight || spaceBelowInViewport < menuHeight) && 
-          spaceAboveInContainer > menuHeight && spaceAboveInViewport > menuHeight) {
-        top = -(menuHeight + 8)
-      }
-      
-      // Горизонтальное позиционирование
-      if (isOwn) {
-        // Для собственных сообщений - всегда слева от сообщения
-        right = 'auto'
-        left = -4
-      } else {
-        // Для чужих сообщений - всегда справа от сообщения
-        right = -4
-        left = 'auto'
-      }
-      
-      setMenuPosition({ top, right, left })
-      
-      // Показываем меню после позиционирования
-      menu.style.visibility = 'visible'
-    }
-
-    // Небольшая задержка для корректного расчета размеров
-    const timeoutId = setTimeout(positionMenu, 0)
-    
-    // Добавляем обработчик изменения размера окна
-    const handleResize = () => {
-      if (menuOpen) {
-        positionMenu()
-      }
-    }
-    
-    window.addEventListener('resize', handleResize)
-    window.addEventListener('scroll', handleResize, true)
-    
-    return () => {
-      clearTimeout(timeoutId)
-      window.removeEventListener('resize', handleResize)
-      window.removeEventListener('scroll', handleResize, true)
-    }
-  }, [menuOpen, isOwn])
-
   const handleEditStart = () => {
     setIsEditing(true)
     setEditText(text || '')
-    setMenuOpen(false)
+    closeContextMenu()
   }
 
   const handleEditSave = () => {
@@ -137,22 +62,46 @@ const MessageItem = ({ message, isOwn, index, onReply, onEdit, onEditById, onDel
       handleEditCancel()
     }
   }
+
+  const handleContextMenu = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    openContextMenu(e)
+  }
+
+  const handleContextAction = (action) => {
+    closeContextMenu()
+    action()
+  }
+
+  const getAttachedFiles = () => { return attached_files || files || [] }
+
   return (
       <div 
         ref={messageRef}
-        id={message.id} 
+        id={message.id}
         data-time={messageTime}
         className={`message-item ${isOwn ? 'own' : ''} ${selected ? 'selected' : ''}`} 
-        onClick={(e) => { if (selected !== undefined) onSelect?.(index, message) }}
+        onClick={(e) => { 
+          if (selected !== undefined) {
+            onSelect?.(index, message) 
+          }
+        }}
       >
-      <div className="message-content" style={{ position: 'relative' }}>
+      <div 
+        className="message-content" 
+        style={{ position: 'relative' }}
+      >
         {message.replyTo && (
           <div className="message-reply">
             <div className="message-reply-user">{message.replyTo.user}</div>
             <div className="message-reply-text">{(message.replyTo.text || '').slice(0, 160)}</div>
           </div>
         )}
-        <div className="message-text">
+        <div 
+          className="message-text" 
+          onContextMenu={handleContextMenu}
+        >
           {isEditing ? (
             <div className="message-edit-container">
               <textarea
@@ -191,84 +140,14 @@ const MessageItem = ({ message, isOwn, index, onReply, onEdit, onEditById, onDel
                   </a>
                 </div>
               )}
+              {getAttachedFiles().length > 0 && (
+                <div className="message-attachments">
+                  <MediaPreviewAdapter attachedFileIds={getAttachedFiles()} />
+                </div>
+              )}
             </>
           )}
         </div>
-        <button
-          type="button"
-          className={`msg-action-dots ${menuOpen ? 'open' : ''}`}
-          title="Действия"
-          onClick={() => setMenuOpen((v) => !v)}
-          aria-haspopup
-          aria-expanded={menuOpen}
-        >
-          •••
-        </button>
-        {menuOpen && (
-          <div 
-            className="msg-action-menu" 
-            ref={menuRef}
-            style={{
-              top: menuPosition.top !== undefined ? menuPosition.top : -4,
-              right: menuPosition.right !== undefined ? menuPosition.right : -4,
-              left: menuPosition.left !== undefined ? menuPosition.left : 'auto'
-            }}
-          >
-            <button className="msg-action-item" onClick={() => { setMenuOpen(false); onReply?.(index, message) }}>
-              <span className="msg-action-ico" aria-hidden>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
-              </span>
-              Ответить
-            </button>
-            {isOwn && (
-              <button className="msg-action-item" onClick={() => { setMenuOpen(false); handleEditStart() }}>
-                <span className="msg-action-ico" aria-hidden>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                </span>
-                Изменить
-              </button>
-            )}
-            <button className="msg-action-item" onClick={() => { setMenuOpen(false); onPin?.(index, message) }}>
-              <span className="msg-action-ico" aria-hidden>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 17v5"/><path d="M5 7l5 5v4l4-4 5-5z"/></svg>
-              </span>
-              Закрепить
-            </button>
-            <button className="msg-action-item" onClick={() => { setMenuOpen(false); onCopy?.(index, message) }}>
-              <span className="msg-action-ico" aria-hidden>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              </span>
-              Копировать текст
-            </button>
-            <button className="msg-action-item" onClick={() => { setMenuOpen(false); onForward?.(index, message) }}>
-              <span className="msg-action-ico" aria-hidden>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h11"/><path d="M10 6l6 6-6 6"/></svg>
-              </span>
-              Переслать
-            </button>
-            {isOwn && (
-              <button className="msg-action-item danger" onClick={() => { 
-                setMenuOpen(false); 
-                if (onDeleteById && message.id) {
-                  onDeleteById(message.id);
-                } else {
-                  onDelete?.(index, message);
-                }
-              }}>
-                <span className="msg-action-ico" aria-hidden>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
-                </span>
-                Удалить
-              </button>
-            )}
-            <button className="msg-action-item" onClick={() => { setMenuOpen(false); onSelect?.(index, message) }}>
-              <span className="msg-action-ico" aria-hidden>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/><path d="M9 12l2 2 4-4"/></svg>
-              </span>
-              Выделить
-            </button>
-          </div>
-        )}
         <div 
           className="message-time"
           title={editTime ? `Отправлено: ${formatHistoryDateTime(messageTime, userTimezone)}\nОтредактировано: ${formatHistoryDateTime(editTime, userTimezone)}` : `Отправлено: ${formatHistoryDateTime(messageTime, userTimezone)}`}
@@ -303,6 +182,113 @@ const MessageItem = ({ message, isOwn, index, onReply, onEdit, onEditById, onDel
           )}
         </div>
       </div>
+      
+      <ContextMenu
+        isOpen={contextMenuOpen}
+        position={contextMenuPosition}
+        onClose={closeContextMenu}
+        alignToLeft={isOwn}
+      >
+        <ContextMenuItem
+          onClick={() => handleContextAction(() => onReply?.(index, message))}
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 17 4 12 9 7"></polyline>
+              <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
+            </svg>
+          }
+        >
+          Ответить
+        </ContextMenuItem>
+        
+        {isOwn && (
+          <ContextMenuItem
+            onClick={() => handleContextAction(handleEditStart)}
+            icon={
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9"/>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+            }
+          >
+            Изменить
+          </ContextMenuItem>
+        )}
+        
+        <ContextMenuItem
+          onClick={() => handleContextAction(() => onPin?.(index, message))}
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 17v5"/>
+              <path d="M5 7l5 5v4l4-4 5-5z"/>
+            </svg>
+          }
+        >
+          Закрепить
+        </ContextMenuItem>
+        
+        <ContextMenuItem
+          onClick={() => handleContextAction(() => onCopy?.(index, message))}
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          }
+        >
+          Копировать текст
+        </ContextMenuItem>
+        
+        <ContextMenuItem
+          onClick={() => handleContextAction(() => onForward?.(index, message))}
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12h11"/>
+              <path d="M10 6l6 6-6 6"/>
+            </svg>
+          }
+        >
+          Переслать
+        </ContextMenuItem>
+        
+        <ContextMenuItem separator />
+        
+        {isOwn && (
+          <ContextMenuItem
+            onClick={() => handleContextAction(() => {
+              if (onDeleteById && message.id) {
+                onDeleteById(message.id);
+              } else {
+                onDelete?.(index, message);
+              }
+            })}
+            danger
+            icon={
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6"/>
+                <path d="M14 11v6"/>
+                <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+              </svg>
+            }
+          >
+            Удалить
+          </ContextMenuItem>
+        )}
+        
+        <ContextMenuItem
+          onClick={() => handleContextAction(() => onSelect?.(index, message))}
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+              <path d="M9 12l2 2 4-4"/>
+            </svg>
+          }
+        >
+          Выделить
+        </ContextMenuItem>
+      </ContextMenu>
     </div>
   )
 }

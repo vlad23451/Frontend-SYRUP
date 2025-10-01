@@ -6,7 +6,6 @@
  * Поддерживает перетаскивание через `useDraggableModal` и закрытие по ESC/бекдропу.
  */
 import React, { useEffect, useRef, useState } from 'react'
-import { useDraggableModal } from '../../hooks/useDraggableModal'
 import ModalHeader from '../ui/ModalHeader'
 import ModalFooter from '../ui/ModalFooter'
 import EditHistoryForm from './EditHistoryForm'
@@ -18,8 +17,6 @@ const EditHistoryModal = ({ isOpen, onClose, history, onSuccess }) => {
   const [error, setError] = useState('')
 
   const containerRef = useRef(null)
-  const handleRef = useRef(null)
-  useDraggableModal(isOpen, containerRef, handleRef)
 
   useEffect(() => {
     if (!isOpen) return
@@ -76,8 +73,6 @@ const EditHistoryModal = ({ isOpen, onClose, history, onSuccess }) => {
             />
           </div>
         </div>
-        <div className="modal-drag-handle bottom external" ref={handleRef} title="Переместить" />
-        <div className="modal-drag-visible bottom external" />
       </div>
     </div>
   )

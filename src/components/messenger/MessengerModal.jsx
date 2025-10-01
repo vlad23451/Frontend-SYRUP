@@ -1,11 +1,9 @@
 import React, { useEffect, useRef } from 'react'
 import MessengerLayout from './MessengerLayout'
 import ModalHeader from '../ui/ModalHeader'
-import { useDraggableModal } from '../../hooks/useDraggableModal'
 
 const MessengerModal = ({ open, selectedChat, onClose }) => {
   const containerRef = useRef(null)
-  const handleRef = useRef(null)
 
   useEffect(() => {
     if (!open) return
@@ -14,7 +12,6 @@ const MessengerModal = ({ open, selectedChat, onClose }) => {
     return () => window.removeEventListener('keydown', onEsc)
   }, [open, onClose])
 
-  useDraggableModal(open, containerRef, handleRef)
 
   if (!open) return null
   
@@ -31,8 +28,6 @@ const MessengerModal = ({ open, selectedChat, onClose }) => {
             <MessengerLayout selectedChat={selectedChat} />
           </div>
         </div>
-        <div className="modal-drag-handle bottom external" ref={handleRef} title="Переместить" />
-        <div className="modal-drag-visible bottom external" />
       </div>
     </div>
   )

@@ -1,15 +1,17 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 import { useHistoryComments } from '../../hooks/useHistoryComments'
 import { useHistoryActions } from '../../hooks/useHistoryActions'
 import { useHistoryDates } from '../../hooks/useHistoryDates'
 import { useCommentsModal } from '../../hooks/useCommentsModal'
+import { useHistoryViews } from '../../contexts/HistoryViewsContext'
 
 import HistoryHeader from './HistoryHeader'
 import HistoryActions from './HistoryActions'
 import HistoryContent from './HistoryContent'
 import CommentsModal from '../comments/CommentsModal'
 import EditHistoryModal from './EditHistoryModal'
+import EditHistoryAttachments from './EditHistoryAttachments'
 import ConfirmModal from '../common/ConfirmModal'
 import { getUserFromStorage } from '../../utils/localStorageUtils'
 
@@ -25,19 +27,55 @@ const HistoryCard = ({ history, onDelete, onUpdate, forceMeAsAuthor = false, ove
   } = useHistoryActions(history, onDelete)
   const { publishedAtStr, updatedAtStr, hasUpdate } = useHistoryDates(history)
   const { commentsModal, handleOpenCommentsModal, handleCloseCommentsModal } = useCommentsModal()
+  const { observeElement, unobserveElement } = useHistoryViews()
+  const cardRef = useRef(null)
 
   const currentUser = getUserFromStorage()
   const isOwnerComputed = Boolean(history?.author?.id && currentUser?.user_info?.id === history.author.id)
   const isOwner = typeof isOwnerProp === 'boolean' ? isOwnerProp : isOwnerComputed
 
   const [isEditOpen, setEditOpen] = useState(false)
+  const [isEditAttachmentsOpen, setEditAttachmentsOpen] = useState(false)
 
   const handleEdit = () => setEditOpen(true)
   const handleEditClose = () => setEditOpen(false)
+  
+  const handleEditAttachments = () => setEditAttachmentsOpen(true)
+  const handleEditAttachmentsClose = () => setEditAttachmentsOpen(false)
+
+  // Отслеживаем видимость карточки для автоматического просмотра
+  useEffect(() => {
+    if (cardRef.current && history) {
+      observeElement(cardRef.current)
+    }
+    return () => {
+      if (cardRef.current) {
+        unobserveElement(cardRef.current)
+      }
+    }
+  }, [observeElement, unobserveElement, history?.id])
+
+  if (!history) {
+    return null
+  }
 
   return (
-    <div className="history-card history-card-bordered wide history-card-anchor" data-id={history.id}>
-      <HistoryHeader history={history} forceMeAsAuthor={forceMeAsAuthor} overrideAuthor={overrideAuthor} />
+      <div 
+        ref={cardRef}
+        className="history-card history-card-bordered wide history-card-anchor" 
+        data-id={history.id}
+        data-history-id={history.id}
+      >
+      <HistoryHeader 
+        history={history} 
+        forceMeAsAuthor={forceMeAsAuthor} 
+        overrideAuthor={overrideAuthor}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onEditAttachments={handleEditAttachments}
+        isDeleting={isDeleting}
+        isOwner={isOwner}
+      />
 
       <HistoryContent history={history} />
 
@@ -48,10 +86,6 @@ const HistoryCard = ({ history, onDelete, onUpdate, forceMeAsAuthor = false, ove
         publishedAtStr={publishedAtStr}
         updatedAtStr={updatedAtStr}
         hasUpdate={hasUpdate}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        isDeleting={isDeleting}
-        isOwner={isOwner}
       />
 
       <CommentsModal 
@@ -75,6 +109,13 @@ const HistoryCard = ({ history, onDelete, onUpdate, forceMeAsAuthor = false, ove
         onClose={handleEditClose}
         history={history}
         onSuccess={(updated) => {onUpdate(updated)}}
+      />
+
+      <EditHistoryAttachments 
+        history={history}
+        onUpdate={onUpdate}
+        onClose={handleEditAttachmentsClose}
+        isOpen={isEditAttachmentsOpen}
       />
 
     </div>

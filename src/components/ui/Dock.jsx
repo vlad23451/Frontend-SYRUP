@@ -22,8 +22,6 @@ const Dock = observer(() => {
     isActivePath,
     isPeople,
     isAuthenticated,
-    searchValue,
-    setSearchValue,
     handleItemClick,
     showBackButton,
     isFollowingPage,
@@ -60,18 +58,6 @@ const Dock = observer(() => {
           </Link>
         ) : null}
 
-        {isAuthenticated && isPeople ? (
-          <div className="dock-item" style={{gap: 4}} title="Поиск">
-            <span className="dock-label" style={{fontSize: 10}}>Поиск</span>
-            <input
-              className="dock-search-input"
-              type="text"
-              value={searchValue}
-              placeholder="Поиск друзей"
-              onChange={(e) => setSearchValue(e.target.value)}
-            />
-          </div>
-        ) : null}
 
         <button className="dock-item" title="Назад" onClick={(e) => { e.preventDefault(); open() }} style={{ display: showBackButton ? 'inline-flex' : 'none' }}>
           <span className="dock-icon" aria-hidden>

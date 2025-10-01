@@ -4,7 +4,6 @@ import HistoryPreview from './HistoryPreview'
 import CommentList from './CommentList'
 import CommentInput from './CommentInput'
 import ConfirmModal from '../common/ConfirmModal'
-import { useDraggableModal } from '../../hooks/useDraggableModal'
 import { useCommentsController } from '../../hooks/useCommentsController'
 
 const CommentsModal = ({ open, history, onClose, onCommentCountUpdate }) => {
@@ -19,6 +18,8 @@ const CommentsModal = ({ open, history, onClose, onCommentCountUpdate }) => {
     deleteConfirm,
     loadingReactions,
     endRef,
+    attachedFiles,
+    isAttachingFiles,
     setNewComment,
     setEditText,
     handleSubmit,
@@ -28,6 +29,7 @@ const CommentsModal = ({ open, history, onClose, onCommentCountUpdate }) => {
     cancelEditing,
     toggleLike,
     toggleDislike,
+    handleFilesChange,
     isAuthenticated,
     isOwnComment,
   } = useCommentsController({ open, history, onCommentCountUpdate })
@@ -50,8 +52,6 @@ const CommentsModal = ({ open, history, onClose, onCommentCountUpdate }) => {
 
   const containerRef = useRef(null)
   const modalRef = useRef(null)
-  const grabRef = useRef(null)
-  useDraggableModal(open, containerRef, grabRef)
 
   if (!open) return null
 
@@ -96,15 +96,15 @@ const CommentsModal = ({ open, history, onClose, onCommentCountUpdate }) => {
               <CommentInput
                 newComment={newComment}
                 setNewComment={setNewComment}
-                submitting={submitting}
+                submitting={submitting || isAttachingFiles}
                 onSubmit={handleSubmit}
+                onFilesChange={handleFilesChange}
+                attachedFiles={attachedFiles}
               />
             </>
           )}
           </div>
         </div>
-        <div className="modal-drag-handle bottom external" ref={grabRef} title="Переместить" />
-        <div className="modal-drag-visible bottom external" />
       </div>
       <ConfirmModal
         open={!!deleteConfirm}

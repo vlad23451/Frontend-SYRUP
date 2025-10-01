@@ -1,48 +1,26 @@
-/**
- * @fileoverview Главный компонент мессенджера
- * 
- * Этот компонент представляет основную структуру мессенджера с WebSocket соединением.
- * Объединяет все компоненты чата в единый интерфейс.
- * 
- * Структура интерфейса:
- * - ChatList: список чатов с пользователями
- * - ChatHeader: заголовок чата с информацией о собеседнике
- * - MessageList: список сообщений
- * - MessageInput: поле ввода новых сообщений
- * 
- * Функциональность:
- * - WebSocket соединение через useSocketMessenger
- * - Отправка и получение сообщений в реальном времени
- * - Отображение списка сообщений
- * - Ввод и отправка новых сообщений
- * - Интеграция с сервером через WebSocket
- * - Управление выбором активного чата
- * 
- * Состояния:
- * - messages: массив сообщений чата
- * - username: имя текущего пользователя
- * - sendMessage: функция отправки сообщения
- * - selectedChat: текущий выбранный чат
- * 
- * @author SYRUP CHAT Team
- * @version 1.0.0
- */
-
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import { observer } from 'mobx-react-lite'
 import { useSocketMessenger } from '../../hooks/messenger/useSocketMessenger'
 import ChatList from './ChatList'
 import MessengerLayout from './MessengerLayout'
+import GlobalSearchModal from '../search/GlobalSearchModal'
+import { useStore } from '../../stores/StoreContext'
 
-const Messenger = () => {
+const Messenger = observer(() => {
   const { messages, username, sendMessage } = useSocketMessenger()
-  const { chats, loading, error, selectedChat, selectChat } = useChats()
+  const { chat } = useStore()
+  const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false)
 
-  if (loading) {
+  useEffect(() => {
+    chat.fetchChats()
+  }, [chat])
+
+  if (chat.loading) {
     return <div className="loading">Загрузка чатов...</div>
   }
 
-  if (error) {
-    return <div className="error">Ошибка: {error.message}</div>
+  if (chat.error) {
+    return <div className="error">Ошибка: {chat.error}</div>
   }
 
   return (
@@ -52,17 +30,34 @@ const Messenger = () => {
           <div className="sidebar-header">
             <h3 className="sidebar-title">Контакты</h3>
             <p className="sidebar-subtitle">Выберите пользователя для чата</p>
+            <button 
+              className="sidebar-search-btn"
+              onClick={() => setIsGlobalSearchOpen(true)}
+              title="Поиск по всем чатам"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+              Поиск
+            </button>
           </div>
           <ChatList 
-            chats={chats} 
-            selectedChat={selectedChat}
-            onSelectChat={selectChat}
+            chats={chat.chats} 
+            selectedChat={chat.selectedChat}
+            onSelectChat={chat.selectChat}
           />
         </div>
-        <MessengerLayout selectedChat={selectedChat} />
+        <MessengerLayout selectedChat={chat.selectedChat} />
       </div>
+      
+      <GlobalSearchModal 
+        isOpen={isGlobalSearchOpen}
+        onClose={() => setIsGlobalSearchOpen(false)}
+      />
     </div>
   )
 }
+)
 
 export default Messenger 

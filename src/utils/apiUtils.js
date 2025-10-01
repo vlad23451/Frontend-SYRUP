@@ -45,7 +45,7 @@ export const apiRequest = async (endpoint, options = {}) => {
 
   let response = await fetch(`${BASE_URL}${endpoint}`, fetchOptions)
 
-  if ((response.status === 400 || response.status === 401 || response.status === 403) && !endpoint.startsWith('/auth/refresh')) {
+  if (response.status === 403 && !endpoint.startsWith('/auth/refresh')) {
     const refreshed = await authStore.tryRefreshToken()
     if (refreshed) {
       response = await fetch(`${BASE_URL}${endpoint}`, fetchOptions)
@@ -54,7 +54,16 @@ export const apiRequest = async (endpoint, options = {}) => {
   
   if (!response.ok) {
     const data = await response.json().catch(() => ({}))
-    throw new Error(data.message)
+    
+    // Специальная обработка для ошибки 400 при входе
+    if (response.status === 400 && endpoint === '/auth/login') {
+      const error = new Error('Неверный логин или пароль')
+      error.status = 400
+      error.isLoginError = true
+      throw error
+    }
+    
+    throw new Error(data.message || 'Произошла ошибка')
   }
   
   if (options.json === false) {

@@ -35,13 +35,13 @@ export const useProfile = () => {
       }
     }
 
-    const authorId = overrideAuthorId ?? history.author.id
-    const authorLogin = overrideAuthorLogin ?? history.author.login
-    const authorAvatar = overrideAuthorAvatar ?? history.author.avatar_url
+    const authorId = overrideAuthorId ?? history.author?.id
+    const authorLogin = overrideAuthorLogin ?? history.author?.login
+    const authorAvatar = overrideAuthorAvatar ?? history.author?.avatar_url
 
     const isMeAuthor = authorId && currentUserId && authorId === currentUserId
     const displayLogin = authorLogin
-    const displayAvatar = authorAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorLogin)}&background=random`
+    const displayAvatar = authorAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayLogin)}&background=random`
     const targetUserId = isMeAuthor ? currentUserId : authorId
 
     return {

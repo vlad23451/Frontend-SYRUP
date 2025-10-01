@@ -1,0 +1,78 @@
+/**
+ * @fileoverview Стили для кнопки избранного
+ */
+
+.favorite-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.favorite-button:hover {
+  background: var(--interactive-hover-bg);
+  color: var(--color-text);
+  transform: scale(1.05);
+}
+
+.favorite-button:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.favorite-button:active {
+  transform: scale(0.95);
+}
+
+.favorite-button svg {
+  width: 18px;
+  height: 18px;
+  transition: all 0.2s ease;
+}
+
+/* Активное состояние - ярко-желтая звездочка */
+.favorite-button-active {
+  color: #fbbf24 !important;
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.favorite-button-active:hover {
+  color: #f59e0b !important;
+  background: rgba(251, 191, 36, 0.2);
+  transform: scale(1.1);
+}
+
+.favorite-button-active svg {
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.5));
+}
+
+/* Анимация при клике */
+.favorite-button:active svg {
+  transform: scale(0.9);
+}
+
+.favorite-button-active:active svg {
+  transform: scale(0.9);
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.8));
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  .favorite-button {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .favorite-button svg {
+    width: 16px;
+    height: 16px;
+  }
+}

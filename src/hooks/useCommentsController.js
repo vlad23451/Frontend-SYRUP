@@ -10,6 +10,7 @@ import {
   createCommentDislike,
   deleteCommentDislike,
 } from '../services/commentService'
+import { attachFileToComment } from '../services/mediaService'
 
 export const useCommentsController = ({ open, history, onCommentCountUpdate }) => {
   const { auth } = useStore()
@@ -23,6 +24,8 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
   const [editText, setEditText] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState(null)
   const [loadingReactions, setLoadingReactions] = useState(new Set())
+  const [attachedFiles, setAttachedFiles] = useState([])
+  const [isAttachingFiles, setIsAttachingFiles] = useState(false)
 
   const endRef = useRef(null)
 
@@ -75,7 +78,7 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
   const handleSubmit = async (e) => {
     e?.preventDefault?.()
     const text = newComment.trim()
-    if (!text || !history?.id) return
+    if ((!text && attachedFiles.length === 0) || !history?.id) return
 
     setSubmitting(true)
     setError(null)
@@ -100,10 +103,28 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
         isDislikeActive: false,
         likeCount: 0,
         dislikeCount: 0,
+        attachments: attachedFiles,
+      }
+
+      // Прикрепляем файлы к комментарию, если они есть
+      if (attachedFiles.length > 0) {
+        setIsAttachingFiles(true)
+        try {
+          const attachPromises = attachedFiles.map(file => 
+            attachFileToComment(file.id, newCommentData.id)
+          )
+          await Promise.all(attachPromises)
+        } catch (attachError) {
+          console.error('Ошибка прикрепления файлов:', attachError)
+          setError('Комментарий создан, но не удалось прикрепить файлы')
+        } finally {
+          setIsAttachingFiles(false)
+        }
       }
 
       setComments((prev) => [...prev, commentToAdd])
       setNewComment('')
+      setAttachedFiles([])
       if (onCommentCountUpdate) onCommentCountUpdate(comments.length + 1)
     } catch (err) {
       console.error('Ошибка создания комментария:', err)
@@ -163,6 +184,12 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
   const cancelEditing = () => {
     setEditingComment(null)
     setEditText('')
+  }
+
+
+  // Функция для обновления файлов комментария
+  const handleFilesChange = (newFiles) => {
+    setAttachedFiles(newFiles)
   }
 
   const toggleLike = async (id) => {
@@ -289,6 +316,8 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
     deleteConfirm,
     loadingReactions,
     endRef,
+    attachedFiles,
+    isAttachingFiles,
     // setters
     setNewComment,
     setDeleteConfirm,
@@ -301,6 +330,7 @@ export const useCommentsController = ({ open, history, onCommentCountUpdate }) =
     cancelEditing,
     toggleLike,
     toggleDislike,
+    handleFilesChange,
     // derived
     isAuthenticated: !!auth?.user,
     isOwnComment: (c) =>

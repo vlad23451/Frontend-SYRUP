@@ -5,12 +5,16 @@ import ChatStore from './ChatStore'
 import UserStatusStore from './UserStatusStore'
 import { getChatHistory } from '../services/chatService'
 import { getUserId } from '../utils/localStorageUtils'
+import { pinMessage, unpinMessage, getPinnedMessages } from '../services/pinnedMessagesService'
 
 class MessagesStore {
   items = []
   loading = false
   error = null
   pinned = []
+  loadingMore = false
+  hasMore = true
+  currentChatId = null
 
   constructor() {
     makeAutoObservable(this)
@@ -24,6 +28,18 @@ class MessagesStore {
     this.error = error
   }
 
+  setLoadingMore(loading) {
+    this.loadingMore = loading
+  }
+
+  setHasMore(hasMore) {
+    this.hasMore = hasMore
+  }
+
+  setCurrentChatId(chatId) {
+    this.currentChatId = chatId
+  }
+
   setItems(data) {
     // Если data содержит поле messages, извлекаем его, иначе используем data как массив
     const items = data?.messages || data || []
@@ -33,7 +49,36 @@ class MessagesStore {
       ))
   }
 
-  _processMessagesData(data) {
+  prependItems(data, expectedLimit = 100) {
+    // Добавляем старые сообщения в начало списка
+    const items = data?.messages || data || []
+    console.log('prependItems: добавляем', items.length, 'новых сообщений')
+    
+    const newItems = items.map(
+      (m) => (
+        { ...m, id: m.id || `${Date.now()}_${Math.random().toString(36).slice(2,8)}` }
+      ))
+    
+    // Бэкенд возвращает сообщения в обратном порядке (последние первыми)
+    // Для старых сообщений нам нужно развернуть порядок
+    const reversedNewItems = [...newItems].reverse()
+    
+    // Убираем дубликаты по ID
+    const existingIds = new Set(this.items.map(m => m.id))
+    const uniqueNewItems = reversedNewItems.filter(m => !existingIds.has(m.id))
+    
+    console.log('prependItems: уникальных новых сообщений:', uniqueNewItems.length)
+    
+    this.items = [...uniqueNewItems, ...this.items]
+    
+    // Если получили меньше сообщений чем запрашивали, значит больше нет
+    if (items.length < expectedLimit) {
+      console.log('prependItems: достигнут конец истории, hasMore = false')
+      this.hasMore = false
+    }
+  }
+
+  _processMessagesData(data, isInitialLoad = true) {
     // Если data содержит поле messages, извлекаем его, иначе используем data как массив
     const items = data?.messages || data || []
     
@@ -51,16 +96,28 @@ class MessagesStore {
       })
     }
     
-    return items.map(
+    // Бэкенд теперь возвращает сообщения в обратном порядке (последние первыми)
+    // Для первой загрузки разворачиваем порядок, чтобы отображать от старых к новым
+    const processedItems = items.map(
       (m) => (
         { ...m, id: m.id || `${Date.now()}_${Math.random().toString(36).slice(2,8)}` }
       ))
+    
+    if (isInitialLoad) {
+      console.log('_processMessagesData: разворачиваем порядок сообщений для первой загрузки')
+      return processedItems.reverse()
+    }
+    
+    return processedItems
   }
 
   clearMessages() {
     this.items = []
     this.loading = false
     this.error = null
+    this.hasMore = true
+    this.currentChatId = null
+    this.loadingMore = false
   }
 
   addMessage(message) {
@@ -111,26 +168,86 @@ class MessagesStore {
     }
   }
 
-  pinMessageById(id, scope = 'me') {
-    if (!id) return
+  async pinMessageById(messageId, scope = 'me', chatId = null) {
+    if (!messageId) return
 
-    const exists = this.pinned.some(p => p.id === id && p.scope === scope)
+    try {
+      const currentChatId = chatId || this.getCurrentChatId()
+      if (!currentChatId) {
+        console.error('Нет ID чата для закрепления сообщения')
+        return
+      }
 
-    if (!exists) this.pinned = [...this.pinned, { id, scope }]
+      await pinMessage(currentChatId, messageId)
+      
+      // Обновляем локальное состояние
+      // После закрепления перезагружаем список закрепленных сообщений
+      await this.loadPinnedMessages(currentChatId)
+    } catch (error) {
+      console.error('Ошибка при закреплении сообщения:', error)
+      throw error
+    }
   }
 
-  unpinMessageById(id) {
-    if (!id) return
+  async unpinMessageById(messageId, chatId = null) {
+    if (!messageId) return
 
-    this.pinned = this.pinned.filter(p => p.id !== id)
+    try {
+      const currentChatId = chatId || this.getCurrentChatId()
+      if (!currentChatId) {
+        console.error('Нет ID чата для открепления сообщения')
+        return
+      }
+
+      await unpinMessage(currentChatId, messageId)
+      
+      // Обновляем локальное состояние
+      // После открепления перезагружаем список закрепленных сообщений
+      await this.loadPinnedMessages(currentChatId)
+    } catch (error) {
+      console.error('Ошибка при откреплении сообщения:', error)
+      throw error
+    }
+  }
+
+  async loadPinnedMessages(chatId) {
+    if (!chatId) return
+
+    try {
+      const response = await getPinnedMessages(chatId)
+      
+      runInAction(() => {
+        this.pinned = (response.pinned_messages || []).map(pinned => ({
+          id: pinned.id,
+          messageId: pinned.message.id,
+          scope: 'all', // По умолчанию для всех, можно добавить логику определения
+          pinnedAt: pinned.pinned_at,
+          pinnedBy: pinned.pinned_by_user,
+          message: pinned.message,
+          chatTitle: pinned.chat_title,
+          companionLogin: pinned.companion_login,
+          companionAvatarUrl: pinned.companion_avatar_url
+        }))
+      })
+    } catch (error) {
+      console.error('Ошибка при загрузке закрепленных сообщений:', error)
+    }
+  }
+
+  getCurrentChatId() {
+    // Получаем ID текущего чата из ChatStore
+    const chatStore = this.getChatStore()
+    return chatStore?.selectedChat?.chat_id || chatStore?.selectedChat?.id
+  }
+
+  getChatStore() {
+    // Получаем ChatStore из контекста
+    return window.__mobxStores?.chat
   }
 
   getPinnedMessages() {
-    const idToMsg = new Map(this.items.map(m => [m.id, m]))
-    
+    // Возвращаем закрепленные сообщения в том виде, в котором они пришли с сервера
     return this.pinned
-      .map(p => ({ ...p, message: idToMsg.get(p.id)}))
-      .filter(x => x.message)
   }
 
   markOwnMessagesReadUntil(chatId, untilTimestamp, readerUserId) {
@@ -212,6 +329,7 @@ class MessagesStore {
   async fetchMessages(companionLogin) {
     this.setLoading(true)
     this.setError(null)
+    this.setHasMore(true)
     
     try {
       const selectedChat = ChatStore.selectedChat
@@ -220,19 +338,29 @@ class MessagesStore {
       
       if (isNew) {
         const chatId = await WebSocketStore.sendJoinChat(companionLogin)
+        this.setCurrentChatId(chatId)
         
         const data = await getChatHistory(chatId)
         runInAction(() => {
           this.items = this._processMessagesData(data)
           this.loading = false
+          // Если получили меньше 100 сообщений, значит больше нет
+          if ((data?.messages || data || []).length < 100) {
+            this.hasMore = false
+          }
         })
       } else {
         const chatId = selectedChat.chat_id
+        this.setCurrentChatId(chatId)
         
         const data = await getChatHistory(chatId)
         runInAction(() => {
           this.items = this._processMessagesData(data)
           this.loading = false
+          // Если получили меньше 100 сообщений, значит больше нет
+          if ((data?.messages || data || []).length < 100) {
+            this.hasMore = false
+          }
         })
       }
     } catch (error) {
@@ -244,9 +372,10 @@ class MessagesStore {
     }
   }
 
-  async fetchHistoryByCompanionId(companionId, skip = 0, limit = 50) {
+  async fetchHistoryByCompanionId(companionId, skip = 0, limit = 100) {
     this.setLoading(true)
     this.setError(null)
+    this.setHasMore(true)
     try {
       const selectedChat = ChatStore.selectedChat
       
@@ -258,6 +387,11 @@ class MessagesStore {
         runInAction(() => {
           this.items = this._processMessagesData(data)
           this.loading = false
+          this.currentChatId = chatId
+          // Если получили меньше сообщений чем запрашивали, значит больше нет
+          if ((data?.messages || data || []).length < limit) {
+            this.hasMore = false
+          }
         })
       } else {
         const chatId = selectedChat.chat_id
@@ -265,6 +399,11 @@ class MessagesStore {
         runInAction(() => {
           this.items = this._processMessagesData(data)
           this.loading = false
+          this.currentChatId = chatId
+          // Если получили меньше сообщений чем запрашивали, значит больше нет
+          if ((data?.messages || data || []).length < limit) {
+            this.hasMore = false
+          }
         })
       }
     } catch (error) {
@@ -275,19 +414,58 @@ class MessagesStore {
     }
   }
 
-  async fetchHistoryByChatId(chatId, skip = 0, limit = 50) {
+  async fetchHistoryByChatId(chatId, skip = 0, limit = 100) {
     this.setLoading(true)
     this.setError(null)
+    this.setHasMore(true)
     try {
       const data = await getChatHistory(chatId, skip, limit)
       runInAction(() => {
         this.items = this._processMessagesData(data)
         this.loading = false
+        // Устанавливаем currentChatId для правильной работы infinite scroll
+        this.currentChatId = chatId
+        // Если получили меньше сообщений чем запрашивали, значит больше нет
+        if ((data?.messages || data || []).length < limit) {
+          this.hasMore = false
+        }
       })
     } catch (error) {
       runInAction(() => {
         this.error = error.message
         this.loading = false
+      })
+    }
+  }
+
+  async loadMoreMessages() {
+    if (this.loadingMore || !this.hasMore || !this.currentChatId) {
+      console.log('loadMoreMessages прервано:', {
+        loadingMore: this.loadingMore,
+        hasMore: this.hasMore,
+        currentChatId: this.currentChatId
+      })
+      return
+    }
+
+    console.log('Загрузка дополнительных сообщений для чата:', this.currentChatId, 'skip:', this.items.length)
+    this.setLoadingMore(true)
+    this.setError(null)
+
+    try {
+      const skip = this.items.length
+      const data = await getChatHistory(this.currentChatId, skip, 100)
+      
+      runInAction(() => {
+        console.log('Получено дополнительных сообщений:', (data?.messages || data || []).length)
+        this.prependItems(data, 100)
+        this.loadingMore = false
+      })
+    } catch (error) {
+      console.error('Ошибка при загрузке старых сообщений:', error)
+      runInAction(() => {
+        this.error = error.message
+        this.loadingMore = false
       })
     }
   }

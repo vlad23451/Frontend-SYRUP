@@ -24,7 +24,7 @@ export const getChats = async () => {
   return apiRequest('/messages/chats')
 }
 
-export const getChatHistory = async (chatId, skip = 0, limit = 50) => {
+export const getChatHistory = async (chatId, skip = 0, limit = 100) => {
   const params = new URLSearchParams(
     { skip: String(skip),
       limit: String(limit)

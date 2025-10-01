@@ -24,7 +24,6 @@ const Histories = () => {
   const isLoadingMore = useRef(false)
   const PAGE_LIMIT = 10
   
-  // Загрузка первой страницы
   const loadFirstPage = async () => {
     setLoading(true)
     setError(null)
@@ -33,11 +32,12 @@ const Histories = () => {
       const data = await getHistories(0, PAGE_LIMIT)
       const items = Array.isArray(data) ? data : (data?.items || [])
       
+      // Синхронизация избранного происходит автоматически при загрузке приложения
+      
       setHistories(items)
-      setPage(1) // следующая страница будет 1
+      setPage(1) 
       setHasMore(items.length >= PAGE_LIMIT)
       
-      console.log('📄 Loaded first page:', items.length, 'items')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -56,26 +56,21 @@ const Histories = () => {
     setLoading(true)
     
     const skip = page * PAGE_LIMIT
-    console.log('📄 Loading next page:', page, 'skip:', skip)
     
     try {
       const data = await getHistories(skip, PAGE_LIMIT)
       const items = Array.isArray(data) ? data : (data?.items || [])
-      console.log('📦 Received items:', items.length)
       
-      // Добавляем к существующему массиву
+      // Синхронизация избранного происходит автоматически при загрузке приложения
+      
       setHistories(prev => [...prev, ...items])
       
-      // Увеличиваем номер страницы для следующего запроса
       setPage(prev => prev + 1)
       
-      // Если пришло меньше чем лимит - это конец
       if (items.length < PAGE_LIMIT) {
         setHasMore(false)
-        console.log('🛑 No more data')
       }
     } catch (err) {
-      console.error('📄 Pagination error:', err)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -98,12 +93,11 @@ const Histories = () => {
           hasMore && 
           !isLoadingMore.current && 
           !loading &&
-          window.innerHeight + window.scrollY >= document.body.offsetHeight - 100
+          window.innerHeight + window.scrollY >= document.body.offsetHeight - 800
         ) {
-          console.log('📜 Scroll triggered: loading next page')
           loadNextPage()
         }
-      }, 100)
+      }, 50)
     }
 
     window.addEventListener('scroll', handleScroll)
@@ -147,7 +141,7 @@ const Histories = () => {
         
         {loading && histories.length > 0 && (
           <div className="pagination-loading">
-            <div className="loading-spinner">Загрузка...</div>
+            <div className="loading-spinner"></div>
           </div>
         )}
 
@@ -156,6 +150,7 @@ const Histories = () => {
             onClose={() => setIsCreateOpen(false)}
           onSuccess={handleCreateSuccess}
         />
+        
       </div>
     </div>
   )

@@ -47,6 +47,10 @@ export const createHistory = async (historyData) => {
   })
 }
 
+export const getHistoryById = async (historyId) => {
+  return apiRequest(`/history/${historyId}`)
+}
+
 export const updateHistory = async (historyId, historyData) => {
   return apiRequest(`/history/${historyId}`, {
     method: 'PUT',
@@ -59,10 +63,6 @@ export const deleteHistory = async (historyId) => {
     method: 'DELETE',
     json: false
   })
-}
-
-export const getHistoryById = async (historyId) => {
-  return apiRequest(`/history/${historyId}`)
 }
 
 export const createHistoryLike = async (historyId) => {
@@ -101,5 +101,62 @@ export const getHistoriesByIds = async (ids) => {
   return apiRequest('/history/by-ids', {
     method: 'POST',
     body: JSON.stringify({ ids })
+  })
+}
+
+export const addFilesToHistory = async (historyId, fileIds) => {
+  return apiRequest(`/history/${historyId}/files`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      attached_file_ids: fileIds
+    })
+  })
+}
+
+export const replaceHistoryFiles = async (historyId, fileIds) => {
+  return apiRequest(`/history/${historyId}/files`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      attached_file_ids: fileIds
+    })
+  })
+}
+
+export const addToFavorites = async (historyId) => {
+  return apiRequest('/favorites/', {
+    method: 'POST',
+    body: JSON.stringify({
+      history_id: historyId
+    })
+  })
+}
+
+export const removeFromFavorites = async (historyId) => {
+  return apiRequest(`/favorites/${historyId}`, {
+    method: 'DELETE',
+    json: false
+  })
+}
+
+export const getFavorites = async (skip = 0, limit = 10) => {
+  const params = new URLSearchParams({ skip: String(skip), limit: String(limit) }).toString()
+  return apiRequest(`/favorites/?${params}`)
+}
+
+export const addHistoryView = async (historyId) => {
+  return apiRequest('/history-views/', {
+    method: 'POST',
+    body: JSON.stringify({
+      history_id: historyId
+    })
+  })
+}
+
+export const addHistoryViewsBulk = async (historyIds) => {
+  return apiRequest('/history-views/bulk', {
+    method: 'POST',
+    body: JSON.stringify({
+      history_ids: historyIds
+    })
   })
 }

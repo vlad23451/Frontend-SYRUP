@@ -10,6 +10,7 @@ export const useMessengerController = (selectedChat) => {
   const [replyingTo, setReplyingTo] = useState(null)
   const [selectedIndices, setSelectedIndices] = useState([])
   const lastMarkSentRef = useRef({ chatId: null, until: null })
+  const lastFetchedChatRef = useRef(null)
 
   useEffect(() => {
     let cancelled = false
@@ -17,12 +18,23 @@ export const useMessengerController = (selectedChat) => {
     const run = async () => {
       if (!selectedChat) {
         messages.clearMessages?.()
+        lastFetchedChatRef.current = null
+        return
+      }
+
+      // Создаем стабильный ключ чата
+      const currentChatKey = selectedChat.chat_id || selectedChat.companion_id || selectedChat.companionId || selectedChat.id || selectedChat.companion_login
+      
+      // Проверяем, не загружали ли мы уже этот чат
+      if (lastFetchedChatRef.current === currentChatKey) {
         return
       }
       
       try {
         if (selectedChat.chat_id) {
-          await messages.fetchHistoryByChatId?.(selectedChat.chat_id, 0, 50)
+          await messages.fetchHistoryByChatId?.(selectedChat.chat_id, 0, 100)
+          await messages.loadPinnedMessages?.(selectedChat.chat_id)
+          lastFetchedChatRef.current = selectedChat.chat_id
         } else {
           const companionId = selectedChat.companion_id || selectedChat.companionId || selectedChat.id
           if (companionId) {
@@ -43,18 +55,23 @@ export const useMessengerController = (selectedChat) => {
               chat.setItems(updatedItems)
               chat.selectChat(updatedChat)
               
-              await messages.fetchHistoryByChatId?.(chatId, 0, 50)
+              await messages.fetchHistoryByChatId?.(chatId, 0, 100)
+              await messages.loadPinnedMessages?.(chatId)
+              lastFetchedChatRef.current = chatId
               
             } catch (error) {
               console.error('Ошибка получения chat_id через WebSocket:', error)
-              await messages.fetchHistoryByCompanionId?.(companionId, 0, 50)
+              await messages.fetchHistoryByCompanionId?.(companionId, 0, 100)
+              lastFetchedChatRef.current = companionId
             } finally {
               chat.setLoadingChatId(false)
             }
           } else if (selectedChat.companion_login) {
-          await messages.fetchMessages?.(selectedChat.companion_login)
+            await messages.fetchMessages?.(selectedChat.companion_login)
+            lastFetchedChatRef.current = selectedChat.companion_login
           } else {
             messages.clearMessages?.()
+            lastFetchedChatRef.current = null
           }
         }
       } catch (error) {
@@ -65,7 +82,7 @@ export const useMessengerController = (selectedChat) => {
     run()
     
     return () => { cancelled = true }
-  }, [selectedChat, messages, websocket, chat])
+  }, [selectedChat, messages, chat, websocket])
 
   useEffect(() => {
     try {
@@ -100,10 +117,10 @@ export const useMessengerController = (selectedChat) => {
     } catch (error) {
       console.error('Ошибка при отправке mark_as_read:', error)
     }
-  }, [messages.items, chat.selectedChat, websocket, chat, messages])
+  }, [messages, chat, websocket])
 
-  const handleSend = useCallback(async (text, file) => {
-    if (!text?.trim() && !file) {
+  const handleSend = useCallback(async (text, files) => {
+    if (!text?.trim() && (!files || files.length === 0)) {
       return
     }
     if (!selectedChat) {
@@ -148,8 +165,30 @@ export const useMessengerController = (selectedChat) => {
           return
         }
       }
+
+      // Подготавливаем ID прикрепленных файлов (файлы уже загружены)
+      let attachedFileIds = []
+      if (files && files.length > 0) {
+        try {
+          console.log('Используем предзагруженные файлы:', files.map(f => f.file.name))
+          // Файлы уже загружены, получаем их ID
+          for (const fileInfo of files) {
+            if (fileInfo.uploaded && fileInfo.fileId && !fileInfo.uploadError) {
+              attachedFileIds.push(fileInfo.fileId)
+              console.log('Используем файл ID:', fileInfo.fileId, 'для файла:', fileInfo.file.name)
+            } else {
+              console.warn('Пропускаем файл с ошибкой или незагруженный:', fileInfo.file.name, fileInfo.uploadError)
+            }
+          }
+          console.log('Все ID файлов для отправки:', attachedFileIds)
+        } catch (error) {
+          console.error('Ошибка при подготовке файлов:', error)
+        }
+      }
       
-      const sendMessageSuccess = websocket.sendTextMessage(senderId, chatId, text)
+      // Отправляем сообщение через WebSocket с прикрепленными файлами
+      console.log('Отправляем сообщение с файлами:', { text, attachedFileIds })
+      const sendMessageSuccess = websocket.sendTextMessage(senderId, chatId, text, attachedFileIds)
 
       if (!sendMessageSuccess) {
         console.error('Ошибка отправки сообщения через WebSocket')
@@ -200,28 +239,46 @@ export const useMessengerController = (selectedChat) => {
   }, [messages, selectedIndices])
 
   const [forwardModalOpen, setForwardModalOpen] = useState(false)
-  const [pinModalOpen, setPinModalOpen] = useState(false)
   const [pinnedListOpen, setPinnedListOpen] = useState(false)
-  const [pinTargetId, setPinTargetId] = useState(null)
   const bulkForward = useCallback(() => {
     if (selectedIndices.length === 0) return
     setForwardModalOpen(true)
   }, [selectedIndices])
 
-  const openPinModal = useCallback((message) => {
-    setPinTargetId(message?.id)
-    setPinModalOpen(true)
-  }, [])
+  const openPinModal = useCallback(async (message) => {
+    if (!message?.id) return
+    
+    try {
+      const currentChatId = selectedChat?.chat_id || selectedChat?.id
+      if (!currentChatId) {
+        console.error('Нет ID чата для закрепления сообщения')
+        return
+      }
+      
+      await messages.pinMessageById?.(message.id, 'all', currentChatId)
+    } catch (error) {
+      console.error('Ошибка при закреплении сообщения:', error)
+    }
+  }, [messages, selectedChat])
 
-  const pinForScope = useCallback((scope) => {
-    if (!pinTargetId) return
-    messages.pinMessageById?.(pinTargetId, scope)
-    setPinModalOpen(false)
-  }, [messages, pinTargetId])
 
-  const unpinById = useCallback((id) => {
-    messages.unpinMessageById?.(id)
-  }, [messages])
+  const unpinById = useCallback(async (id) => {
+    try {
+      const currentChatId = selectedChat?.chat_id || selectedChat?.id
+      if (!currentChatId) {
+        console.error('Нет ID чата для открепления сообщения')
+        return
+      }
+      
+      await messages.unpinMessageById?.(id, currentChatId)
+    } catch (error) {
+      console.error('Ошибка при откреплении сообщения:', error)
+    }
+  }, [messages, selectedChat])
+  
+  const loadMoreMessages = useCallback(async () => {
+    await messages.loadMoreMessages()
+  }, [messages]);
   
   return {
     messages,
@@ -243,13 +300,14 @@ export const useMessengerController = (selectedChat) => {
     bulkForward,
     forwardModalOpen,
     setForwardModalOpen,
-    pinModalOpen,
-    setPinModalOpen,
     openPinModal,
-    pinForScope,
     pinnedListOpen,
     setPinnedListOpen,
     unpinById,
     getPinned: () => messages.getPinnedMessages?.() || [],
+    loadMoreMessages,
+    hasMoreMessages: messages.hasMore,
+    loading: messages.loading,
+    loadingMore: messages.loadingMore,
   }
 }

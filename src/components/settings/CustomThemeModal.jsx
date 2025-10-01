@@ -1,10 +1,8 @@
 import React, { useEffect, useRef } from 'react'
 import ModalHeader from '../ui/ModalHeader'
-import { useDraggableModal } from '../../hooks/useDraggableModal'
 
 const CustomThemeModal = ({ open, onClose, customTheme, setCustomTheme }) => {
   const containerRef = useRef(null)
-  const grabRef = useRef(null)
 
   useEffect(() => {
     if (!open) return
@@ -13,7 +11,6 @@ const CustomThemeModal = ({ open, onClose, customTheme, setCustomTheme }) => {
     return () => window.removeEventListener('keydown', onEsc)
   }, [open, onClose])
 
-  useDraggableModal(open, containerRef, grabRef)
 
   if (!open) return null
 
@@ -60,8 +57,6 @@ const CustomThemeModal = ({ open, onClose, customTheme, setCustomTheme }) => {
             <button className="custom-modal-btn confirm" onClick={onClose}>Готово</button>
           </div>
         </div>
-        <div className="modal-drag-handle bottom external" ref={grabRef} title="Переместить" style={{ touchAction: 'none' }} />
-        <div className="modal-drag-visible bottom external" />
       </div>
     </div>
   )

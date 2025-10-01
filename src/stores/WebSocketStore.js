@@ -85,23 +85,26 @@ class WebSocketStore {
         is_read: fromMe ? undefined : false,
         message_type: data.message_type || 'text',
         metadata: data.metadata || {},
-        edited_at: data.edited_at || null
+        edited_at: data.edited_at || null,
+        attached_files: data.attached_files || [] // Добавляем поддержку прикрепленных файлов
       }
       
       import('./ChatStore').then(({ default: ChatStore }) => {
         const selectedChat = ChatStore.selectedChat
         const selectedChatId = selectedChat?.chat_id
         
+        // Проверяем, не является ли это отредактированным сообщением
+        const existingMessage = MessagesStore.items.find(m => m.id === data.id)
+        
         if (selectedChatId && parseInt(selectedChatId) === parseInt(data.chat_id)) {
-          // Проверяем, не является ли это отредактированным сообщением
-          const existingMessage = MessagesStore.items.find(m => m.id === data.id)
           
           console.log('WebSocket message received:', {
             id: data.id,
             text: data.text,
             edited_at: data.edited_at,
             messageType: data.type || data.message_type,
-            existingMessage: !!existingMessage
+            existingMessage: !!existingMessage,
+            attachedFiles: data.attached_files || []
           })
           
           if (existingMessage && (data.edited_at || data.type === 'message_edited')) {
@@ -111,13 +114,12 @@ class WebSocketStore {
                 m.id === data.id ? { 
                   ...m, 
                   text: data.text, 
-                  edited_at: data.edited_at || new Date().toISOString()
+                  edited_at: data.edited_at || new Date().toISOString(),
+                  attached_files: data.attached_files || m.attached_files || []
                 } : m
               )
             })
           } else {
-            // Добавляем новое сообщение
-            console.log('Adding new message:', data.id, 'edited_at:', data.edited_at)
             MessagesStore.addMessage(messageObj)
           }
         } else {
@@ -126,7 +128,13 @@ class WebSocketStore {
             ChatStore.incrementUnreadCount(data.chat_id)
           }
         }
-        ChatStore.updateLastMessage(data.chat_id, messageObj)
+        // Для отредактированных сообщений не обновляем last_message и не перемещаем чат
+        if (existingMessage && (data.edited_at || data.type === 'message_edited')) {
+          // Не обновляем last_message для отредактированных сообщений
+          // Только обновляем само сообщение в списке
+        } else {
+          ChatStore.updateLastMessage(data.chat_id, messageObj)
+        }
         
         if (!fromMe) {
           this.showNotificationForMessage(messageObj, data, ChatStore)
@@ -151,10 +159,14 @@ class WebSocketStore {
             m.id === data.id ? { 
               ...m, 
               text: data.text, 
-              edited_at: data.edited_at || new Date().toISOString()
+              edited_at: data.edited_at || new Date().toISOString(),
+              attached_files: data.attached_files || m.attached_files || []
             } : m
           )
         })
+        
+        // Не обновляем last_message для отредактированных сообщений
+        // last_message должно показывать последнее сообщение по времени отправки, а не редактирования
       } catch (error) {
         console.error('Ошибка редактирования сообщения:', error)
       }
@@ -282,8 +294,8 @@ class WebSocketStore {
     })
   }
 
-
-  sendTextMessage(senderId, chatId, text) {
+  // Обновленный метод для отправки сообщений с прикрепленными файлами
+  sendTextMessage(senderId, chatId, text, attachedFileIds = []) {
     if (!this.connection || !this.isConnected) {
       console.error('WebSocket не подключен')
       return false
@@ -298,6 +310,13 @@ class WebSocketStore {
         sender_login: senderLogin,
         chat_id: parseInt(chatId),
         text: String(text)
+      }
+
+      // Добавляем прикрепленные файлы, если они есть
+      if (attachedFileIds && attachedFileIds.length > 0) {
+        // attachedFileIds является массивом ID файлов
+        message.attached_files = attachedFileIds
+        console.log('Отправляем WebSocket сообщение с файлами:', message)
       }
       
       this.connection.send(JSON.stringify(message))
@@ -325,7 +344,6 @@ class WebSocketStore {
       return false
     }
   }
-
 
   sendMarkAsRead(chatId, userId, untilTimestamp) {
     if (!this.connection || !this.isConnected) {

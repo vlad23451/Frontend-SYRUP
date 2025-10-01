@@ -182,8 +182,6 @@ const SettingsModal = ({ open, onClose, initialTab = 'appearance', singleMode = 
             </section>
           </div>
         </div>
-        <div className="modal-drag-handle bottom external" ref={ctrl.grabRef} title="Переместить" style={{ touchAction: 'none' }} />
-        <div className="modal-drag-visible bottom external" />
       </div>
     </div>
   )

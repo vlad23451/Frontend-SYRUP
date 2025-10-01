@@ -1,11 +1,11 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import ModalHeader from '../ui/ModalHeader'
-import { useDraggableModal } from '../../hooks/useDraggableModal'
 import Avatar from '../ui/Avatar'
 
-const UsersListModal = ({ open, title, users, loading, error, onClose, onUserClick, onActionRender }) => {
+const UsersListModal = ({ open, title, users, loading, error, onClose, onUserClick, onActionRender, onSearch, searchType }) => {
   const containerRef = useRef(null)
-  const handleRef = useRef(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -19,7 +19,25 @@ const UsersListModal = ({ open, title, users, loading, error, onClose, onUserCli
     }
   }, [open, onClose])
 
-  useDraggableModal(open, containerRef, handleRef)
+  const handleSearch = (e) => {
+    const query = e.target.value
+    setSearchQuery(query)
+    if (onSearch) {
+      onSearch(query, searchType)
+    }
+  }
+
+  const handleSearchIconClick = () => {
+    setIsSearchExpanded(!isSearchExpanded)
+    if (!isSearchExpanded) {
+      // Фокусируемся на поле ввода при раскрытии
+      setTimeout(() => {
+        const input = document.querySelector('.search-input-container input')
+        if (input) input.focus()
+      }, 100)
+    }
+  }
+
 
   if (!open) return null
 
@@ -27,9 +45,47 @@ const UsersListModal = ({ open, title, users, loading, error, onClose, onUserCli
     <div className="custom-modal-backdrop" onClick={(e) => { if (e.target.classList.contains('custom-modal-backdrop')) onClose && onClose() }}>
       <div className="custom-modal" ref={containerRef} style={{ maxWidth: 520 }}>
         <ModalHeader title={title} onClose={onClose} hideClose={true} />
-        <div ref={handleRef} className="modal-drag-handle" aria-hidden />
-        <div className="modal-drag-visible" aria-hidden />
         <div className="custom-modal-body">
+          <div style={{ padding: '0 16px 16px 16px' }}>
+            <div className={`search-input-container ${isSearchExpanded ? 'expanded' : ''}`}>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearch}
+                onBlur={() => {
+                  // Скрываем поле если оно пустое
+                  if (!searchQuery.trim()) {
+                    setIsSearchExpanded(false)
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--color-background)',
+                  color: 'var(--color-text)',
+                  fontSize: '14px'
+                }}
+              />
+              <svg 
+                className="search-icon" 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                onClick={handleSearchIconClick}
+                style={{ cursor: 'pointer' }}
+              >
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+            </div>
+          </div>
           {loading && <div className="modal-loading">Загрузка...</div>}
           {error && <div className="modal-error">Ошибка: {error}</div>}
           {!loading && !error && (

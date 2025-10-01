@@ -4,7 +4,7 @@ import WebSocketStore from '../stores/WebSocketStore'
 const connectService = async () => {
     //const wsUrl = 'wss://myprojectfastapi.loca.lt/ws/'
     const wsUrl = 'ws://localhost:8000/ws/'
-    const connect = new window.WebSocket(wsUrl)
+    const connect = new WebSocket(wsUrl)
 
     connect.onopen = async () => {
         WebSocketStore.setConnection(connect)

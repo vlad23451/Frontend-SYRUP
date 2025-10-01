@@ -31,6 +31,14 @@ class ProfileStore {
     }
   }
 
+  updateProfileAbout(about) {
+    if (this.user && this.user.user_info) {
+      runInAction(() => {
+        this.user.user_info.about = about
+      })
+    }
+  }
+
   async fetchProfile() {
     this.setLoading(true)
     this.setError(null)
@@ -56,4 +64,5 @@ class ProfileStore {
   }
 }
 
-export default new ProfileStore() 
+const profileStore = new ProfileStore()
+export default profileStore 

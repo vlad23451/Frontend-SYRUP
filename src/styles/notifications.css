@@ -24,6 +24,14 @@
   user-select: none;
 }
 
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .custom-notification {
+    margin-bottom: 8px;
+    border-radius: calc(var(--border-radius) * 0.8);
+  }
+}
+
 .custom-notification:focus {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;

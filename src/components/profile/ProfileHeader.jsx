@@ -33,6 +33,7 @@ import ProfileHeaderLoading from "./ProfileHeaderLoading"
 import ProfileHeaderError from "./ProfileHeaderError"
 import ProfileAvatar from "./ProfileAvatar"
 import MyProfileInfo from "./MyProfileInfo"
+import ProfileMenu from "./ProfileMenu"
 
 const ProfileHeader = observer(() => {
   const { profile } = useStore()
@@ -56,8 +57,11 @@ const ProfileHeader = observer(() => {
 
   return (
     <div className="profile-header">
-      <div style={{display:'flex', flexDirection:'column', alignItems:'center', width:'100%'}}>
-        <ProfileAvatar user={profile.user} isMe={true} onAvatarUpdated={handleAvatarUpdated} />
+      <div className="profile-header-top">
+        <div style={{display:'flex', flexDirection:'column', alignItems:'center', width:'100%'}}>
+          <ProfileAvatar user={profile.user} isMe={true} onAvatarUpdated={handleAvatarUpdated} />
+        </div>
+        <ProfileMenu />
       </div>
       <MyProfileInfo />
     </div>

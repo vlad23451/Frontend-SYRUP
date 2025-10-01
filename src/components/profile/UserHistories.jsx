@@ -41,7 +41,7 @@ const UserHistories = observer(() => {
 
   return (
     <div className="user-histories">
-      <UserHistoriesHeader onOpenModal={handleOpenModal} />
+      <UserHistoriesHeader onOpenModal={handleOpenModal} historiesCount={myHistories.items.length} />
       {myHistories.items.length === 0 ? (
         <UserHistoriesEmpty />
       ) : (

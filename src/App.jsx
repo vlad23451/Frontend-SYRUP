@@ -9,6 +9,8 @@
  * 
  * Маршруты:
  * - "/" - главная страница с историями
+ * - "/history/:id" - просмотр отдельной истории
+ * - "/favorites" - избранные истории
  * - "/login" - страница авторизации
  * - "/register" - страница регистрации
  * - "/profile" - профиль пользователя
@@ -21,16 +23,18 @@
  */
 
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 
 import Login from "./pages/Login"
 import Histories from "./pages/Histories"
-import Dock from './components/ui/Dock'
+import HistoryView from "./pages/HistoryView"
+import ResponsiveDock from './components/ui/ResponsiveDock'
 import Profile from "./pages/Profile"
 import Register from "./pages/Register"
 import Messenger from "./pages/Messenger"
 import People from "./pages/People"
 import Following from "./pages/Following"
+import Favorites from "./pages/Favorites"
 import UserProfile from "./pages/UserProfile"
 import SettingsModal from './components/settings/SettingsModal'
 import SettingsHubModal from './components/settings/SettingsHubModal'
@@ -39,6 +43,12 @@ import { SettingsProvider, useSettings } from './contexts/SettingsContext'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import ErrorBoundary from './components/ui/ErrorBoundary'
 import { ProfileModalProvider } from './contexts/ProfileModalContext'
+import { ToastProvider } from './contexts/ToastContext'
+import { FavoritesProvider } from './contexts/FavoritesContext'
+import { HistoryViewsProvider } from './contexts/HistoryViewsContext'
+import { ContextMenuProvider } from './contexts/ContextMenuContext'
+import { MediaPlayerProvider, useMediaPlayer } from './contexts/MediaPlayerContext'
+import MediaPlayerModal from './components/common/MediaPlayerModal'
 import ProfileModal from './components/profile/ProfileModal'
 import { useProfileModal } from './contexts/ProfileModalContext'
 
@@ -46,7 +56,7 @@ import connectService from "./services/connectService"
 import NotificationContainer from './components/ui/NotificationContainer'
 
 const GlobalProfileModal = () => {
-  const { modalState, closeProfileModal, handleGoToChat, handleGoToProfile } = useProfileModal()
+  const { modalState, closeProfileModal, handleGoToChat, handleGoToProfile, handleGoToFavorites } = useProfileModal()
   return (
     <ProfileModal
       open={modalState.open}
@@ -56,6 +66,19 @@ const GlobalProfileModal = () => {
       onClose={closeProfileModal}
       onGoToChat={handleGoToChat}
       onGoToProfile={handleGoToProfile}
+      onGoToFavorites={handleGoToFavorites}
+    />
+  )
+}
+
+const GlobalMediaPlayerModal = () => {
+  const { isOpen, files, initialIndex, closeMediaPlayer } = useMediaPlayer()
+  return (
+    <MediaPlayerModal
+      isOpen={isOpen}
+      onClose={closeMediaPlayer}
+      files={files}
+      initialIndex={initialIndex}
     />
   )
 }
@@ -83,9 +106,14 @@ const SettingsPortals = () => {
 }
 
 const InitServices = () => {
+  const [isInitialized, setIsInitialized] = useState(false)
+  
   useEffect(() => { 
-    connectService()
-  }, [])
+    if (!isInitialized) {
+      connectService()
+      setIsInitialized(true)
+    }
+  }, [isInitialized])
   
   return null
 }
@@ -106,6 +134,11 @@ const App = () => {
           <Router>
             <SettingsProvider>
               <ProfileModalProvider>
+                <ToastProvider>
+                  <FavoritesProvider>
+                    <HistoryViewsProvider>
+                      <ContextMenuProvider>
+                        <MediaPlayerProvider>
                 <div className="main-container">
                 <InitServices />
                 <SPANavigationTracker />
@@ -117,6 +150,11 @@ const App = () => {
                   <Route path="/" element={
                     <ProtectedRoute>
                       <Histories/>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/history/:id" element={
+                    <ProtectedRoute>
+                      <HistoryView/>
                     </ProtectedRoute>
                   } />
                   <Route path="/profile" element={
@@ -139,6 +177,11 @@ const App = () => {
                       <Following/>
                     </ProtectedRoute>
                   } />
+                  <Route path="/favorites" element={
+                    <ProtectedRoute>
+                      <Favorites/>
+                    </ProtectedRoute>
+                  } />
                   <Route path="/messenger" element={
                     <ProtectedRoute>
                       <Messenger/>
@@ -151,11 +194,17 @@ const App = () => {
                   }/>
                 </Routes>
               </main>
-              <Dock />
+              <ResponsiveDock />
               <SettingsPortals />
               <GlobalProfileModal />
+              <GlobalMediaPlayerModal />
               <NotificationContainer />
             </div>
+                        </MediaPlayerProvider>
+                      </ContextMenuProvider>
+                    </HistoryViewsProvider>
+                  </FavoritesProvider>
+                </ToastProvider>
               </ProfileModalProvider>
           </SettingsProvider>
         </Router>

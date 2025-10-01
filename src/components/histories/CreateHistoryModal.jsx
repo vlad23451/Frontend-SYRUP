@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react'
-import { useDraggableModal } from '../../hooks/useDraggableModal'
 import { useCreateHistoryForm } from '../../hooks/useCreateHistoryForm'
 import ModalHeader from '../ui/ModalHeader'
 import ModalFooter from '../ui/ModalFooter'
@@ -20,10 +19,7 @@ const CreateHistoryModal = ({ isOpen, onClose, onSuccess, authorId }) => {
 
   // hooks must be declared unconditionally
   const containerRef = useRef(null)
-  const handleRef = useRef(null)
 
-  // drag via bottom grabбер like other modals
-  useDraggableModal(isOpen, containerRef, handleRef)
 
   // close on ESC
   useEffect(() => {
@@ -77,8 +73,6 @@ const CreateHistoryModal = ({ isOpen, onClose, onSuccess, authorId }) => {
           noDivider
         />
         </div>
-        <div className="modal-drag-handle bottom external" ref={handleRef} title="Переместить" />
-        <div className="modal-drag-visible bottom external" />
       </div>
     </div>
   )
